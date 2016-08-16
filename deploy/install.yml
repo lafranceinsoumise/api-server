@@ -1,0 +1,11 @@
+---
+- name: Ensure git is present
+  apt: name=git state=present
+- name: Clone server repository
+  git: repo=git@github.com:guilro/redado-server.git dest=/srv/app version=master accept_hostkey=yes
+- name: Clone app repository
+  git: repo=git@github.com:guilro/redado-app.git dest=/srv/app version=master accept_hostkey=yes
+- name: Install app npm modules
+  command: npm install chdir=/srv/app
+- name: Prepare app for production
+  command: npm run build chdir=/srv/app

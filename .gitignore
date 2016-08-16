@@ -1,0 +1,11 @@
+domain/*
+logs/*
+workers/*
+
+# Github Vagrant .gitignore
+.vagrant/
+
+# Ansible
+deploy/*.retry
+ubuntu-xenial-16.04-cloudimg-console.log
+inventory

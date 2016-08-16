@@ -1,0 +1,13 @@
+[Unit]
+Description=Redado App Server
+
+[Service]
+Environment=NODE_ENV=production
+SyslogIdentifier=redado-app
+WorkingDirectory=/srv/app/
+ExecStart=/usr/bin/node index.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
