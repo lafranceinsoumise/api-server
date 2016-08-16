@@ -1,0 +1,86 @@
+---
+- name: Install prerequisites
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Install python2
+      raw: sudo apt-get -y install python-simplejson
+
+- name: Install server
+  hosts: all
+  become: true
+  vars:
+    workers:
+      - name: import-people.js
+        enabled: no
+      - name: import-events.js
+        enabled: yes
+  tasks:
+    - name: Add Node.js 6.x repositories
+      shell: curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    - name: Update apt cache
+      apt: upgrade=dist update_cache=yes
+    - name: Ensure python is installed
+      apt: name=python state=present
+    - name: Ensure PyYAML is installed
+      apt: name=python-yaml state=latest
+    - name: Ensure python pip is installed
+      apt: name=python-pip state=present
+    - name: Ensure MongoDB server is installed
+      apt: name=mongodb-server state=present
+    - name: Ensure Redis is present
+      apt: name=redis-server state=present
+    - name: Ensure Node.js is installed
+      apt: name=nodejs state=present
+    - name: Ensure build-essential is installed
+      apt: name=build-essential state=present
+    - name: Ensure Nginx is installed
+      apt: name=nginx state=present
+    - name: Ensure pip is latest version
+      pip: name=pip state=latest
+    - name: Ensure virtualenv is latest version
+      pip: name=virtualenv state=latest
+    - name: Ensure Eve-python is installed
+      pip: name=eve state=latest
+    - name: Install redado files
+      include: install.yml
+      when: vagrant is not defined
+    - name: Install rsyslog configuration
+      copy: src=rsyslog.conf dest=/etc/rsyslog.d/22-redado.conf
+      notify:
+        - reload rsyslog
+    - name: Install redado-api service file
+      template: src=redado-api.service.j2 dest=/etc/systemd/system/redado-api.service
+      notify:
+        - reload systemd
+        - reload redado api
+    - name: Install redado-app service file
+      template: src=redado-app.service.j2 dest=/etc/systemd/system/redado-app.service
+      notify:
+        - reload systemd
+        - reload redado webapp
+    - name: Install redado-worker-{{ item.name }} service file
+      template: src=redado-workers.service.j2 dest=/etc/systemd/system/redado-worker-{{ item.name }}.service
+      with_items: "{{ workers }}"
+      notify:
+        - reload systemd
+        - check redado workers state
+    - name: Install Nginx configuration
+      template: src=nginx.conf.j2 dest=/etc/nginx/conf.d/redado.conf
+      notify:
+        - reload nginx
+  handlers:
+    - name: reload rsyslog
+      service: name=rsyslog state=restarted
+    - name: reload systemd
+      command: systemctl daemon-reload
+    - name: reload redado api
+      service: name=redado-api state=restarted enabled=yes
+    - name: reload redado webapp
+      service: name=redado-app state=restarted enabled=yes
+    - name: check redado workers state
+      service: name=redado-worker-{{ item.name }} state={{ 'restarted' if item.enabled == 'yes' else 'stopped' }} enabled={{ item.enabled }}
+      with_items: "{{ workers }}"
+    - name: reload nginx
+      service: name=nginx state=reloaded

@@ -1,0 +1,22 @@
+server {
+  listen 80;
+
+  server_name redado.dev;
+
+  location / {
+    include proxy_params;
+    proxy_pass http://localhost:3000;
+  }
+}
+
+server {
+  listen 80;
+
+  server_name api.redado.dev;
+
+  location / {
+    add_header Access-Control-Allow-Origin http://redado.dev;
+    include proxy_params;
+    proxy_pass http://localhost:5000;
+  }
+}

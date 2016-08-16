@@ -1,0 +1,12 @@
+[Unit]
+Description=Redado API Server
+
+[Service]
+WorkingDirectory=/srv/server/api/
+SyslogIdentifier=redado-api
+ExecStart=/usr/bin/python2 run.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
