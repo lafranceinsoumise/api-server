@@ -73,6 +73,10 @@ Vagrant.configure(2) do |config|
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "deploy/playbook.yml"
     # ansible.verbose = "vvv"
-    ansible.extra_vars = { vagrant: "true" }
+    ansible.extra_vars = {
+      vagrant: "true",
+      domain: "redado.dev",
+      api_domain: "api.redado.dev"
+    }
   end
 end

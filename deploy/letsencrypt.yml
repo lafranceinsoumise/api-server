@@ -1,0 +1,22 @@
+---
+- name: Install letsencrypt
+  hosts: all
+  become: true
+  tasks:
+    - name: Create letsencrypt webroot directory
+      file: path=/var/www/letsencrypt state=directory mode=0755
+    - name: Ensure letsencrypt is present
+      apt: name=letsencrypt state=present
+    - name: Generate certificates
+      command: letsencrypt certonly --webroot -w /var/www/letsencrypt -d {{ domain }} -d {{ api_domain }} -m {{ letsencrypt_email }} -n --agree-tos
+    - name: Install HTTPS Nginx configuration
+      template: src=nginx_ssl.conf.j2 dest=/etc/nginx/conf.d/redado.conf
+      notify:
+        - reload nginx
+    - name: Install cronjob for letsencrypt renewal
+      cron: name="letsencrypt renew" minute=12 hour=3,9 job="letsencrypt renew >> /var/log/letsencrypt-renew.log"
+    - name: Install cronjob for nginx reload
+      cron: name="nginx reload" minute=15 hour=3,9 job="systemctl reload nginx"
+  handlers:
+    - name: reload nginx
+      service: name=nginx state=reloaded
