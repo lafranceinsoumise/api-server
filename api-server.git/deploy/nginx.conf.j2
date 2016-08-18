@@ -1,7 +1,13 @@
 server {
   listen 80;
 
-  server_name redado.dev;
+  server_name {{ domain }};
+
+  location ~ /.well-known {
+    root /var/www/letsencrypt/;
+    try_files $uri =404;
+    allow all;
+  }
 
   location / {
     include proxy_params;
@@ -12,10 +18,16 @@ server {
 server {
   listen 80;
 
-  server_name api.redado.dev;
+  server_name {{ api_domain }};
+
+  location ~ /.well-known {
+    root /var/www/letsencrypt/;
+    try_files $uri =404;
+    allow all;
+  }
 
   location / {
-    add_header Access-Control-Allow-Origin http://redado.dev;
+    add_header Access-Control-Allow-Origin *;
     include proxy_params;
     proxy_pass http://localhost:5000;
   }

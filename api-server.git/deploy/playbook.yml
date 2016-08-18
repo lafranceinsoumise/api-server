@@ -43,9 +43,6 @@
       pip: name=virtualenv state=latest
     - name: Ensure Eve-python is installed
       pip: name=eve state=latest
-    - name: Install redado files
-      include: install.yml
-      when: vagrant is not defined
     - name: Install rsyslog configuration
       copy: src=rsyslog.conf dest=/etc/rsyslog.d/22-redado.conf
       notify:
@@ -66,10 +63,22 @@
       notify:
         - reload systemd
         - check redado workers state
-    - name: Install Nginx configuration
+    - name: Test if letsencrypt certs are present
+      stat: path=/etc/letsencrypt/live/{{ domain }}/fullchain.pem
+      register: letsencrypt_cert
+    - name: Install HTTP Nginx configuration
       template: src=nginx.conf.j2 dest=/etc/nginx/conf.d/redado.conf
+      when: not letsencrypt_cert.stat.exists
       notify:
         - reload nginx
+    - name: Install HTTPS Nginx configuration
+      template: src=nginx_ssl.conf.j2 dest=/etc/nginx/conf.d/redado.conf
+      when: letsencrypt_cert.stat.exists
+      notify:
+        - reload nginx
+    - name: Install redado files
+      include: install.yml
+      when: vagrant is not defined
   handlers:
     - name: reload rsyslog
       service: name=rsyslog state=restarted
@@ -80,7 +89,7 @@
     - name: reload redado webapp
       service: name=redado-app state=restarted enabled=yes
     - name: check redado workers state
-      service: name=redado-worker-{{ item.name }} state={{ 'restarted' if item.enabled == 'yes' else 'stopped' }} enabled={{ item.enabled }}
+      service: name=redado-worker-{{ item.name }} state={{ 'restarted' if item.enabled else 'stopped' }} enabled={{ item.enabled }}
       with_items: "{{ workers }}"
     - name: reload nginx
       service: name=nginx state=reloaded
