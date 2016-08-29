@@ -3,8 +3,8 @@ Description=Redado App Server
 
 [Service]
 Environment=NODE_ENV=production
-SyslogIdentifier=redado-app
 WorkingDirectory=/srv/app/
+SyslogIdentifier=redado-app
 ExecStart=/usr/bin/node index.js
 Restart=always
 RestartSec=10

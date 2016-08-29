@@ -1,1 +1,1 @@
-your.server.ip.address ansible_user=root domain=domain.com api_domain=api.domain.com letsencrypt_email=your@email.com
+your.server.ip.address ansible_user=root domain=domain.com api_domain=api.domain.com letsencrypt=enabled letsencrypt_email=your@email.com

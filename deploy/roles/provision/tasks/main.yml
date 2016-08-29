@@ -1,0 +1,55 @@
+- name: Add Node.js 6.x repositories
+  shell: curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+- name: Update apt cache
+  apt: upgrade=dist update_cache=yes
+- name: Ensure python is installed
+  apt: name=python state=present
+- name: Ensure PyYAML is installed
+  apt: name=python-yaml state=latest
+- name: Ensure python pip is installed
+  apt: name=python-pip state=present
+- name: Ensure MongoDB server is installed
+  apt: name=mongodb-server state=present
+- name: Ensure Redis is present
+  apt: name=redis-server state=present
+- name: Ensure Node.js is installed
+  apt: name=nodejs state=present
+- name: Ensure build-essential is installed
+  apt: name=build-essential state=present
+- name: Ensure Nginx is installed
+  apt: name=nginx state=present
+- name: Ensure pip is latest version
+  pip: name=pip state=latest
+- name: Ensure virtualenv is latest version
+  pip: name=virtualenv state=latest
+- name: Ensure Eve-python is installed
+  pip: name=eve state=latest
+- name: Install rsyslog configuration
+  template: src=rsyslog.conf dest=/etc/rsyslog.d/22-redado.conf
+  notify:
+    - reload rsyslog
+- name: Install HTTP Nginx configuration
+  template: src=nginx.conf.j2 dest=/etc/nginx/conf.d/redado.conf
+  when: letsencrypt != "enabled"
+  notify:
+    - reload nginx
+- name: Install redado-api service file
+  template: src=redado-api.service.j2 dest=/etc/systemd/system/redado-api.service
+  notify:
+    - reload systemd
+    - reload redado api
+- name: Install redado-app service file
+  template: src=redado-app.service.j2 dest=/etc/systemd/system/redado-app.service
+  notify:
+    - reload systemd
+    - reload redado webapp
+- name: Find all workers file
+  find: paths=/srv/server/workers patterns=*.js
+  register: workers_files
+- debug: var=workers_files
+- name: Install redado-worker-{{ item.path | basename }} service file
+  template: src=redado-workers.service.j2 dest=/etc/systemd/system/redado-worker-{{ item.path | basename }}.service
+  with_items: "{{ workers_files.files }}"
+  notify:
+    - reload systemd
+    - check redado workers state

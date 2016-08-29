@@ -1,0 +1,9 @@
+- name: reload nginx
+  service: name=nginx state=reloaded
+- name: compile app for production
+  command: npm run build chdir=/srv/app
+  environment:
+    NODE_ENV: production
+    REDADO_DOMAIN: "{{ domain }}"
+    REDADO_API_DOMAIN: "{{ api_domain }}"
+    REDADO_PROTOCOL: "{{ letsencrypt == 'enabled' | ternary('https','http') }}"
