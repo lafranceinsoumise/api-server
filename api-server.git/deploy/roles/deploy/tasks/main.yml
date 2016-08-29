@@ -1,6 +1,3 @@
----
-- name: Ensure git is present
-  apt: name=git state=present
 - name: Clone server repository
   git: repo=git@github.com:guilro/redado-server.git dest=/srv/server version=master accept_hostkey=yes
 - name: Copy configuration domain files
@@ -15,10 +12,5 @@
   git: repo=git@github.com:guilro/redado-app.git dest=/srv/app version=master accept_hostkey=yes
 - name: Install app npm modules
   command: npm install chdir=/srv/app
-- name: Prepare app for production
-  command: npm run build chdir=/srv/app
-  environment:
-    NODE_ENV: production
-    REDADO_DOMAIN: "{{ domain }}"
-    REDADO_API_DOMAIN: "{{ api_domain }}"
-    REDADO_PROTOCOL: "{{ letsencrypt_cert.stat.exists | ternary('https','http') }}"
+  notify:
+    - compile app for production

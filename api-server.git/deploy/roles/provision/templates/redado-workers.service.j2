@@ -1,0 +1,13 @@
+[Unit]
+Description=Redado Worker {{ item.path | basename }}
+
+[Service]
+Environment=NODE_ENV=production
+WorkingDirectory=/srv/server/workers/
+SyslogIdentifier=redado-workers-{{ item.path | basename }}
+ExecStart=/usr/bin/node {{ item.path | basename }}
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
