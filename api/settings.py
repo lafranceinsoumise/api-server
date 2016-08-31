@@ -44,8 +44,14 @@ DOMAIN = {}
 for domain, definition in iter_domain():
     if 'mongo_indexes' in definition:
         for index_name, index in definition['mongo_indexes'].items():
-            index = definition['mongo_indexes'][index_name]
-            index_list = index[0] if len(index) == 2 and isinstance(index[1], dict) else index
-            for i, pair in enumerate(index_list):
-                index_list[i] = (pair[0], pair[1])
+            fields = definition['mongo_indexes'][index_name]['fields']
+            for i, pair in enumerate(fields):
+                fields[i] = (pair[0], pair[1])
+            if 'options' in definition['mongo_indexes'][index_name]:
+                definition['mongo_indexes'][index_name] = (
+                    fields,
+                    definition['mongo_indexes'][index_name]['options']
+                )
+            else:
+                definition['mongo_indexes'][index_name] = fields
     DOMAIN[domain] = definition
