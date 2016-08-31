@@ -37,12 +37,12 @@
   template: src=redado-api.service.j2 dest=/etc/systemd/system/redado-api.service
   notify:
     - reload systemd
-    - reload redado api
+    - restart redado api
 - name: Install redado-app service file
   template: src=redado-app.service.j2 dest=/etc/systemd/system/redado-app.service
   notify:
     - reload systemd
-    - reload redado webapp
+    - restart redado webapp
 - name: Find all workers file
   find: paths=/srv/server/workers patterns=*.js
   register: workers_files

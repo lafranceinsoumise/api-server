@@ -3,7 +3,7 @@
 - name: Copy configuration domain files
   synchronize: src=../domain dest=/srv/server/
   notify:
-    - reload redado api
+    - restart redado api
 - name: Copy workers files
   synchronize: src=../workers dest=/srv/server/
   notify:
@@ -14,4 +14,4 @@
   command: npm install chdir=/srv/app
   notify:
     - compile app for production
-    - reload redado app
+    - restart redado webapp
