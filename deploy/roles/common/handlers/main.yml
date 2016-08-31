@@ -7,9 +7,9 @@
     REDADO_DOMAIN: "{{ domain }}"
     REDADO_API_DOMAIN: "{{ api_domain }}"
     REDADO_PROTOCOL: "{{ letsencrypt == 'enabled' | ternary('https','http') }}"
-- name: reload redado webapp
+- name: restart redado webapp
   service: name=redado-app state=restarted enabled=yes
-- name: reload redado api
+- name: restart redado api
   service: name=redado-api state=restarted enabled=yes
 - name: find workers services
   find: paths=/etc/systemd/system patterns=redado-worker-*.service
