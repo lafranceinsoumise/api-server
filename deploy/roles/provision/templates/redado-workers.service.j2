@@ -4,8 +4,8 @@ Description=Redado Worker {{ item.path | basename }}
 [Service]
 Environment=NODE_ENV=production
 WorkingDirectory=/srv/server/workers/
-SyslogIdentifier=redado-workers-{{ item.path | basename }}
-ExecStart=/usr/bin/node {{ item.path | basename }}
+SyslogIdentifier=redado-worker-{{ item.path | basename }}
+ExecStart=/usr/bin/nodejs {{ item.path | basename }}
 Restart=always
 RestartSec=10
 
