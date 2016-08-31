@@ -52,4 +52,5 @@
   with_items: "{{ workers_files.files }}"
   notify:
     - reload systemd
-    - check redado workers state
+    - find workers services
+    - restart workers
