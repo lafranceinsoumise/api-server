@@ -1,7 +1,0 @@
-- name: reload redado api
-  service: name=redado-api state=restarted enabled=yes
-- name: reload redado webapp
-  service: name=redado-app state=restarted enabled=yes
-- name: check redado workers state
-  service: name=redado-worker-{{ item.name }} state={{ 'restarted' if item.enabled else 'stopped' }} enabled={{ item.enabled }}
-  with_items: "{{ workers }}"
