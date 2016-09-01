@@ -1,4 +1,4 @@
-import logging
+from logging import getLogger, StreamHandler
 import os
 import yaml
 
@@ -17,6 +17,8 @@ RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
 # individual items  (defaults to read-only item access).
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 
+log = getLogger('redado')
+log.addHandler(StreamHandler())
 
 def iter_domain():
     dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../project/domain')
@@ -32,10 +34,10 @@ def iter_domain():
             with open(yaml_file_path) as yaml_file:
                 try:
                     resource = os.path.split(os.path.splitext(yaml_file_path)[0])[1]
-                    logging.info("Loaded domain file {}".format(resource))
+                    log.warning(" * Load domain {}".format(resource))
                     yield resource, yaml.load(yaml_file)
                 except (UnicodeDecodeError, yaml.constructor.ConstructorError, yaml.parser.ParserError, yaml.scanner.ScannerError):
-                    logging.warning("Invalid syntax in YAML file {}".format(yaml_file_path))
+                    log.error("Invalid syntax in YAML file {}".format(yaml_file_path))
 
 DOMAIN = {}
 
