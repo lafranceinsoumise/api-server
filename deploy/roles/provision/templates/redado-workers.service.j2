@@ -3,7 +3,7 @@ Description=Redado Worker {{ item.path | basename }}
 
 [Service]
 Environment=NODE_ENV=production
-WorkingDirectory=/srv/server/workers/
+WorkingDirectory=/srv/project/workers/
 SyslogIdentifier=redado-worker-{{ item.path | basename }}
 ExecStart=/usr/bin/nodejs {{ item.path | basename }}
 Restart=always

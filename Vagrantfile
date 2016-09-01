@@ -44,6 +44,7 @@ Vagrant.configure(2) do |config|
   # argument is a set of non-required options.
   config.vm.synced_folder ".", "/srv/server"
   config.vm.synced_folder "../redado-app.git/", "/srv/app"
+  config.vm.synced_folder "../project.git", "/srv/project"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.

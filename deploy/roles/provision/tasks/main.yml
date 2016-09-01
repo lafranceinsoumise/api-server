@@ -44,9 +44,8 @@
     - reload systemd
     - restart redado webapp
 - name: Find all workers file
-  find: paths=/srv/server/workers patterns=*.js
+  find: paths=/srv/project/workers patterns=*.js
   register: workers_files
-- debug: var=workers_files
 - name: Install redado-worker-{{ item.path | basename }} service file
   template: src=redado-workers.service.j2 dest=/etc/systemd/system/redado-worker-{{ item.path | basename }}.service
   with_items: "{{ workers_files.files }}"
