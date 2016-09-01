@@ -7,6 +7,7 @@
 - name: Copy workers files
   synchronize: src=../workers dest=/srv/server/
   notify:
+    - find workers services
     - restart workers
 - name: Clone app repository
   git: repo=git@github.com:guilro/redado-app.git dest=/srv/app version=master accept_hostkey=yes
