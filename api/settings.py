@@ -2,8 +2,6 @@ import logging
 import os
 import yaml
 
-log = logging.getLogger('Redado API')
-
 # Please note that MONGO_HOST and MONGO_PORT could very well be left
 # out as they already default to a bare bones local 'mongod' instance.
 MONGO_HOST = 'localhost'
@@ -34,10 +32,10 @@ def iter_domain():
             with open(yaml_file_path) as yaml_file:
                 try:
                     resource = os.path.split(os.path.splitext(yaml_file_path)[0])[1]
-                    log.info("Loaded domain file {}".format(resource))
+                    logging.info("Loaded domain file {}".format(resource))
                     yield resource, yaml.load(yaml_file)
                 except (UnicodeDecodeError, yaml.constructor.ConstructorError, yaml.parser.ParserError, yaml.scanner.ScannerError):
-                    log.warning("Invalid syntax in YAML file {}".format(yaml_file_path))
+                    logging.warning("Invalid syntax in YAML file {}".format(yaml_file_path))
 
 DOMAIN = {}
 
