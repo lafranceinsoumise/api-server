@@ -1,7 +1,11 @@
 - name: Clone server repository
   git: repo=git@github.com:guilro/redado-server.git dest=/srv/server version=master accept_hostkey=yes
 - name: Copy project repository
-  synchronize: src=../project.git/ dest=/srv/project
+  synchronize:
+    src: ../../project.git/
+    dest: /srv/project
+    rsync_opts:
+      - "--exclude=.git"
   notify:
     - restart redado api
     - find workers services
