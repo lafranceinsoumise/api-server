@@ -2,6 +2,9 @@
 Description=Redado API Server
 
 [Service]
+{% if vagrant is defined %}
+Environment=DEBUG=true
+{% endif %}
 WorkingDirectory=/srv/server/api/
 SyslogIdentifier=redado-api
 ExecStart=/usr/bin/python2 run.py

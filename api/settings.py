@@ -17,6 +17,8 @@ RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
 # individual items  (defaults to read-only item access).
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 
+DEBUG = os.environ['DEBUG'];
+
 log = getLogger('redado')
 log.addHandler(StreamHandler())
 
