@@ -1,0 +1,66 @@
+---
+allow_unknown: true
+item_title: event
+resource_methods:
+- GET
+- POST
+item_methods:
+- GET
+- PUT
+additional_lookup:
+  field: id
+pagination: false
+datasource:
+  filter:
+    published: true
+mongo_indexes:
+  id:
+    fields:
+      - ['id', 1]
+    options:
+      background: true
+  published:
+    fields:
+      - ['published', 1]
+    options:
+      background: true
+  startTime:
+    fields:
+      - ['startTime', 1]
+    options:
+      background: true
+  agenda:
+    fields:
+      - ['agenda', 1]
+    options:
+      background: true
+  coordinates:
+    fields:
+      - ['coordinates', 1]
+    options:
+      background: true
+schema:
+  id:
+    type: integer
+    unique: true
+  name:
+    type: string
+    required: true
+  slug:
+    type: string
+    required: true
+    unique: true
+  path:
+    type: string
+    required: true
+    unique: true
+  startTime:
+    type: datetime
+    required: true
+  agenda:
+    type: string
+    required: true
+  coordinates:
+    type: point
+  participants:
+    type: integer
