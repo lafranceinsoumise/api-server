@@ -8,8 +8,7 @@
     - restart workers
 - name: Clone app repository
   git: repo=git@github.com:guilro/redado-app.git dest=/srv/app version=master accept_hostkey=yes
-- name: Install app npm modules
-  command: npm install chdir=/srv/app
   notify:
+    - install app npm modules
     - compile app for production
     - restart redado webapp

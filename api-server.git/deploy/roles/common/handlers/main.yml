@@ -1,5 +1,7 @@
 - name: reload nginx
   service: name=nginx state=reloaded
+- name: install app npm modules
+  command: npm install chdir=/srv/app
 - name: compile app for production
   command: npm run build chdir=/srv/app
   environment:

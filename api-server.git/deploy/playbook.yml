@@ -6,6 +6,8 @@
   tasks:
     - name: Install python2
       raw: sudo apt-get -y install python-simplejson
+    - name: Ensure git is present
+      apt: name=git state=present
 
 - name: Install server
   hosts: all

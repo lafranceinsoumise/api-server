@@ -2,6 +2,8 @@
   file: path=/var/www/letsencrypt state=directory mode=0755
 - name: Ensure letsencrypt is present
   apt: name=letsencrypt state=present
+- name: Reload nginx
+  service: name=nginx state=reloaded
 - name: Generate certificates
   command: letsencrypt certonly --webroot -w /var/www/letsencrypt -d {{ domain }} -d {{ api_domain }} -m {{ letsencrypt_email }} -n --agree-tos
 - name: Install HTTPS Nginx configuration
