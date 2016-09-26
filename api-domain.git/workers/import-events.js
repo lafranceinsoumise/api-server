@@ -92,23 +92,20 @@ function fetchPage(nextPage) {
       });
     });
 
-    var next = res.body.next ?
+    nextPage = res.body.next ?
       `https://${NBNationSlug}.nationbuilder.com${res.body.next}&access_token=${NBAPIKey}` :
       initUrl;
 
-    redis.set('import-events-next-page', next);
-
-    var time;
-    time = res.headers['Nation-Ratelimit-Reset'] * 1000 - new Date().getTime();
-    time /= res.headers['Nation-Ratelimit-Remaining'];
-    setTimeout(() => {
-      fetchPage(next);
-    }, 10000);
+    redis.set('import-events-next-page', nextPage);
   })
   .catch(err => {
-    // TODO
-    console.log(err);
     // Crawling failed...
+    console.log(err);
+  })
+  .finally(() => {
+    setTimeout(() => {
+      fetchPage(nextPage);
+    }, 10000);
   });
 }
 
