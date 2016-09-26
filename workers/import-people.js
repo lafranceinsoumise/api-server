@@ -1,9 +1,11 @@
 'use strict';
 
 const request = require('request-promise');
+const redis = require('redis').createClient();
 
 const NBAPIKey = 'e2e9cdeb3f70012949c6e90dc69b028d739846f8dad45ceee44e4e78d22c0533';
 const NBNationSlug = 'plp';
+const MailTrainKey = '907068facb88f555ff005261923f861079542ec6';
 
 var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/people?limit=100&access_token=${NBAPIKey}`;
 
@@ -12,12 +14,6 @@ var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/people?limit=100
  * @param  {string} nextPage The URL of the next page.
  */
 function fetchPage(nextPage) {
-  setTimeout(() => {
-    fetchPage();
-  }, 1000);
-
-  return;
-
   request({
     url: nextPage,
     headers: {Accept: 'application/json'},
@@ -26,34 +22,59 @@ function fetchPage(nextPage) {
   })
   .then(function(res) {
     console.log(`Fetched ${nextPage}`);
-    res.body.results.forEach(result => {
-      var body = {
-        email: result.email
-      };
 
-      request.post({
+    var count = {
+      subscribe: 0,
+      unsubscribe: 0
+    };
+
+    res.body.results.forEach(result => {
+      if (result.email) {
+        // Update mailtrain
+        var action = result.email_opt_in === true ? 'subscribe' : 'unsubscribe';
+        request.post({
+          url: `https://newsletter.jlm2017.fr/api/${action}/SyWda9pi?access_token=${MailTrainKey}`,
+          body: {
+            EMAIL: result.email,
+            FORCE_SUBSCRIBE: 'yes'
+          },
+          json: true
+        });
+
+        count[action]++;
+      }
+
+      /* request.post({
         url: 'http://localhost:5000/people',
         body: body,
         json: true
-      });
+      }); */
     });
 
-    var next = res.body.next ?
+    console.log(
+      `Subcribed ${count.subscribe} people ` +
+      `and unsubscribed ${count.unsubscribe}.`
+    );
+
+    nextPage = res.body.next ?
       `https://${NBNationSlug}.nationbuilder.com${res.body.next}&access_token=${NBAPIKey}` :
       initUrl;
 
-    var time;
-    time = res.headers['Nation-Ratelimit-Reset'] * 1000 - new Date().getTime();
-    time /= res.headers['Nation-Ratelimit-Remaining'];
-    setTimeout(() => {
-      fetchPage(next);
-    }, 10000);
+    redis.set('import-people-next-page', nextPage);
   })
   .catch(err => {
-    // TODO
+    // Crawling failed
     console.log(err);
-    // Crawling failed...
+  })
+  .finally(() => {
+    setTimeout(() => {
+      fetchPage(nextPage);
+    }, 1000);
   });
 }
 
-fetchPage(initUrl);
+redis.get('import-people-next-page', (err, reply) => {
+  if (err) console.log(err);
+
+  fetchPage(reply || initUrl);
+});
