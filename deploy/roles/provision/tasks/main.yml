@@ -62,3 +62,4 @@
 - name: Ensure workers are running
   service: name={{ item.path | basename }} state=started enabled=yes
   with_items: "{{ workers_services.files }}"
+  when: ansible is not defined

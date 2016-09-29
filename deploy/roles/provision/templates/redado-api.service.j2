@@ -6,6 +6,7 @@ Description=Redado API Server
 Environment=DEBUG=true
 {% endif %}
 WorkingDirectory=/srv/server/api/
+StandardOutput=syslog
 SyslogIdentifier=redado-api
 ExecStart=/usr/bin/python2 run.py
 Restart=always

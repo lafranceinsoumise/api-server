@@ -19,3 +19,4 @@
 - name: restart workers
   service: name={{ item.path | basename }} state=restarted enabled=yes
   with_items: "{{ workers_services.files }}"
+  when: ansible is not defined
