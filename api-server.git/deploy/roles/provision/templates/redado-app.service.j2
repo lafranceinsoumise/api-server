@@ -4,6 +4,7 @@ Description=Redado App Server
 [Service]
 Environment=NODE_ENV=production
 WorkingDirectory=/srv/app/
+StandardOutput=syslog
 SyslogIdentifier=redado-app
 ExecStart=/usr/bin/nodejs index.js
 Restart=always
