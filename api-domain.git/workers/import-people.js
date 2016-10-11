@@ -35,8 +35,7 @@ function fetchPage(nextPage) {
         request.post({
           url: `https://newsletter.jlm2017.fr/api/${action}/SyWda9pi?access_token=${MailTrainKey}`,
           body: {
-            EMAIL: result.email,
-            FORCE_SUBSCRIBE: 'yes'
+            EMAIL: result.email
           },
           json: true
         });
