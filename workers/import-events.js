@@ -57,6 +57,9 @@ function fetchPage(nextPage) {
           case 7:
             body.agenda = 'melenchon';
             break;
+          case 15:
+            body.agenda = 'reunions_circonscription';
+            break;
         }
       }
 
