@@ -7,7 +7,7 @@
 - name: Generate certificates
   command: letsencrypt certonly --webroot -w /var/www/letsencrypt -d {{ domain }} -d {{ api_domain }} -m {{ letsencrypt_email }} -n --agree-tos
 - name: Install HTTPS Nginx configuration
-  template: src=nginx_ssl.conf.j2 dest=/etc/nginx/conf.d/redado.conf
+  template: src=nginx_redado_ssl.conf.j2 dest=/etc/nginx/conf.d/redado.conf
   notify:
     - reload nginx
     - compile app for production

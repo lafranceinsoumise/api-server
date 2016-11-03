@@ -29,7 +29,7 @@
   notify:
     - reload rsyslog
 - name: Install HTTP Nginx configuration
-  template: src=nginx.conf.j2 dest=/etc/nginx/conf.d/redado.conf
+  template: src=nginx_redado.conf.j2 dest=/etc/nginx/conf.d/redado.conf
   notify:
     - reload nginx
 - name: Install redado-api service file
