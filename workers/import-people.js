@@ -36,7 +36,8 @@ function fetchPage(nextPage) {
           url: `https://newsletter.jlm2017.fr/api/${action}/SyWda9pi?access_token=${MailTrainKey}`,
           body: {
             EMAIL: result.email,
-            MERGE_TAGS: result.tags.join(', ')
+            MERGE_TAGS: result.tags.join(', '),
+            MERGE_ZIPCODE: (result.primary_address && result.primary_address.zip) || null
           },
           json: true
         });
