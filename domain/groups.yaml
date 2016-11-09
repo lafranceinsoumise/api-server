@@ -41,5 +41,14 @@ schema:
     unique: true
   coordinates:
     type: point
+  contact:
+    type: dict
+    schema:
+      name:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
   participants:
     type: integer

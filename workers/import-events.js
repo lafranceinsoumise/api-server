@@ -30,9 +30,17 @@ function fetchPage(nextPage) {
         name: result.name,
         slug: result.slug,
         path: result.path,
-        published: (result.status.indexOf('publiée') !== -1)
+        published: (result.status.indexOf('publiée') !== -1),
+        contact: {
+          name: result.contact.name
+        }
       };
-
+      if (result.contact.show_phone) {
+        body.contact.phone = result.contact.phone;
+      }
+      if (result.contact.show_email) {
+        body.contact.email = result.contact.email;
+      }
       if (result.status.indexOf('publiée') === -1) {
         return;
       }
