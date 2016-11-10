@@ -7,6 +7,12 @@ const NBAPIKey = 'e2e9cdeb3f70012949c6e90dc69b028d739846f8dad45ceee44e4e78d22c05
 const NBNationSlug = 'plp';
 const MailTrainKey = '907068facb88f555ff005261923f861079542ec6';
 
+const whiteList = [
+  'créateur groupe d\'appui',
+  'convention : cars',
+  'convention : inscrit'
+];
+
 var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/people?limit=100&access_token=${NBAPIKey}`;
 
 /**
@@ -36,7 +42,7 @@ function fetchPage(nextPage) {
           url: `https://newsletter.jlm2017.fr/api/${action}/SyWda9pi?access_token=${MailTrainKey}`,
           body: {
             EMAIL: result.email,
-            MERGE_TAGS: result.tags.join(', '),
+            MERGE_TAGS: result.tags.filter(tag => (whiteList.includes(tag))).join(', '),
             MERGE_ZIPCODE: (result.primary_address && result.primary_address.zip) || null
           },
           json: true
