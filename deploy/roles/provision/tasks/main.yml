@@ -32,6 +32,10 @@
   template: src=nginx_redado.conf.j2 dest=/etc/nginx/conf.d/redado.conf
   notify:
     - reload nginx
+- name: Install HTTP Nginx global configuration
+  template: src=nginx.conf dest=/etc/nginx/nginx.conf
+  notify:
+    - reload nginx
 - name: Install redado-api service file
   template: src=redado-api.service.j2 dest=/etc/systemd/system/redado-api.service
   notify:
