@@ -35,10 +35,10 @@ function fetchPage(nextPage) {
           name: result.contact.name
         }
       };
-      if (result.contact.show_phone) {
+      if (result.contact.show_phone && result.contact.phone) {
         body.contact.phone = result.contact.phone;
       }
-      if (result.contact.show_email) {
+      if (result.contact.show_email && result.contact.email) {
         body.contact.email = result.contact.email;
       }
       if (result.status.indexOf('publiée') === -1) {
