@@ -1,6 +1,8 @@
 from logging import getLogger, StreamHandler
 import os
 import yaml
+import types
+import imp
 
 # Please note that MONGO_HOST and MONGO_PORT could very well be left
 # out as they already default to a bare bones local 'mongod' instance.
@@ -22,6 +24,41 @@ DEBUG = os.getenv('DEBUG', False);
 log = getLogger('redado')
 log.addHandler(StreamHandler())
 
+
+def load_py_file(filename):
+    resource = os.path.split(os.path.splitext(filename)[0])[1]
+    d = imp.load_source(resource, filename)
+    definition = {}
+    for key in dir(d):
+        if '__' not in key:
+            definition[key] = d.__dict__[key]
+    log.warning(" * Load domain {}".format(resource))
+    return resource, definition
+
+
+def load_yaml_file(filename):
+    with open(filename) as yaml_file:
+        try:
+            resource = os.path.split(os.path.splitext(filename)[0])[1]
+            log.warning(" * Load domain {}".format(resource))
+            definition = yaml.load(yaml_file)
+            if 'mongo_indexes' in definition:
+                for index_name, index in definition['mongo_indexes'].items():
+                    fields = definition['mongo_indexes'][index_name]['fields']
+                    for i, pair in enumerate(fields):
+                        fields[i] = (pair[0], pair[1])
+                    if 'options' in definition['mongo_indexes'][index_name]:
+                        definition['mongo_indexes'][index_name] = (
+                            fields,
+                            definition['mongo_indexes'][index_name]['options']
+                        )
+                    else:
+                        definition['mongo_indexes'][index_name] = fields
+            return resource, definition
+        except (UnicodeDecodeError, yaml.constructor.ConstructorError, yaml.parser.ParserError, yaml.scanner.ScannerError):
+            log.error("Invalid syntax in YAML file {}".format(yaml_file_path))
+
+
 def iter_domain():
     dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../project/domain')
     assert os.path.exists(dir), "Directory doesn't exist: {}".format(dir)
@@ -30,30 +67,15 @@ def iter_domain():
             if dir_name.startswith('.'):
                 dirs_name.remove(dir_name)
         for filename in filenames:
-            if not filename.endswith(".yaml"):
-                continue
-            yaml_file_path = os.path.join(sub_dir, filename)
-            with open(yaml_file_path) as yaml_file:
-                try:
-                    resource = os.path.split(os.path.splitext(yaml_file_path)[0])[1]
-                    log.warning(" * Load domain {}".format(resource))
-                    yield resource, yaml.load(yaml_file)
-                except (UnicodeDecodeError, yaml.constructor.ConstructorError, yaml.parser.ParserError, yaml.scanner.ScannerError):
-                    log.error("Invalid syntax in YAML file {}".format(yaml_file_path))
+            if filename.endswith(".yaml"):
+                yaml_file_path = os.path.join(sub_dir, filename)
+                yield load_yaml_file(yaml_file_path)
+            if filename.endswith(".py"):
+                py_file_path = os.path.join(sub_dir, filename)
+                yield load_py_file(py_file_path)
+
 
 DOMAIN = {}
 
 for domain, definition in iter_domain():
-    if 'mongo_indexes' in definition:
-        for index_name, index in definition['mongo_indexes'].items():
-            fields = definition['mongo_indexes'][index_name]['fields']
-            for i, pair in enumerate(fields):
-                fields[i] = (pair[0], pair[1])
-            if 'options' in definition['mongo_indexes'][index_name]:
-                definition['mongo_indexes'][index_name] = (
-                    fields,
-                    definition['mongo_indexes'][index_name]['options']
-                )
-            else:
-                definition['mongo_indexes'][index_name] = fields
     DOMAIN[domain] = definition
