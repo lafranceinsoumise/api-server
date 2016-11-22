@@ -18,6 +18,8 @@
   apt: name=build-essential state=present
 - name: Ensure Nginx is installed
   apt: name=nginx state=present
+- name: Ensure uWSGI is present
+  apt: name=uwsgi,uwsgi-plugin-python state=present
 - name: Ensure pip is latest version
   pip: name=pip state=latest
 - name: Ensure virtualenv is latest version
@@ -30,6 +32,10 @@
     - reload rsyslog
 - name: Install HTTP Nginx configuration
   template: src=nginx_redado.conf.j2 dest=/etc/nginx/conf.d/redado.conf
+  notify:
+    - reload nginx
+- name: Install HTTP Nginx localhost configuration
+  template: src=nginx_localhost.conf.j2 dest=/etc/nginx/conf.d/redado-localhost.conf
   notify:
     - reload nginx
 - name: Install HTTP Nginx global configuration

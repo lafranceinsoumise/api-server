@@ -8,9 +8,10 @@ Environment=DEBUG=true
 WorkingDirectory=/srv/server/api/
 StandardOutput=syslog
 SyslogIdentifier=redado-api
-ExecStart=/usr/bin/python2 run.py
+ExecStart=/usr/bin/uwsgi -s /tmp/redado-api.sock --manage-script-name --plugin python --mount /=run:app
 Restart=always
 RestartSec=10
+User=www-data
 
 [Install]
 WantedBy=multi-user.target

@@ -1,22 +1,5 @@
 server {
-  listen 80;
-
-  server_name {{ domain }};
-
-  location ~ /.well-known {
-    root /var/www/letsencrypt/;
-    try_files $uri =404;
-    allow all;
-  }
-
-  location / {
-    include proxy_params;
-    proxy_pass http://localhost:3000;
-  }
-}
-
-server {
-  listen 80;
+  listen 127.0.0.1:5000;
 
   server_name {{ api_domain }};
 
