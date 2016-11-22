@@ -19,11 +19,10 @@ RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
 # individual items  (defaults to read-only item access).
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 
-DEBUG = os.getenv('DEBUG', False);
+DEBUG = os.getenv('DEBUG', False)
 
 log = getLogger('redado')
 log.addHandler(StreamHandler())
-
 
 def load_py_file(filename):
     resource = os.path.split(os.path.splitext(filename)[0])[1]
