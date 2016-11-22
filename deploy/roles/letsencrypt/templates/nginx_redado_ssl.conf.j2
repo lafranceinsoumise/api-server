@@ -65,8 +65,12 @@ server {
   }
 
   location / {
+    try_files $uri @redado-api;
+  }
+
+  location @redado-api {
     add_header Access-Control-Allow-Origin *;
-    include proxy_params;
-    proxy_pass http://localhost:5000;
+    include uwsgi_params;
+    uwsgi_pass unix:/tmp/redado-api.sock;
   }
 }
