@@ -42,9 +42,6 @@ function fetchPage(nextPage) {
       if (result.contact.show_email && result.contact.email) {
         body.contact.email = result.contact.email;
       }
-      if (result.status.indexOf('publiée') === -1) {
-        return;
-      }
 
       if (result.venue && result.venue.address && result.venue.address.lng &&
       result.venue.address.lat) {
@@ -95,6 +92,10 @@ function fetchPage(nextPage) {
         }
       }, err => {
         if (err.statusCode === 404) {
+          if (!body.published) {
+            return;
+          }
+
           return request.post({
             url: `http://localhost:5000/${resource}`,
             body: body,
