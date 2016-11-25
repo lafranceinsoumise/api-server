@@ -39,6 +39,10 @@ schema:
     type: string
     required: true
     unique: true
+  tags:
+    type: list
+    schema:
+      type: string
   coordinates:
     type: point
   contact:

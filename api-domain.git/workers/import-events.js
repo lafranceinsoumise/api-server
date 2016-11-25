@@ -30,6 +30,7 @@ function fetchPage(nextPage) {
         name: result.name,
         slug: result.slug,
         path: result.path,
+        tags: result.tags,
         published: (result.status.indexOf('publiée') !== -1),
         contact: {
           name: result.contact.name
@@ -67,6 +68,8 @@ function fetchPage(nextPage) {
             break;
           case 15:
             body.agenda = 'reunions_circonscription';
+            break;
+          default:
             break;
         }
       }
