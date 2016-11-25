@@ -54,6 +54,10 @@ schema:
     type: string
     required: true
     unique: true
+  tags:
+    type: list
+    schema:
+      type: string
   startTime:
     type: datetime
     required: true
