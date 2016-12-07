@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "co": "^4.6.0",
+    "js-base64": "^2.1.9",
     "redis": "^2.6.2",
     "request-promise": "^3.0.0",
     "timeout-as-promise": "^1.0.0"
