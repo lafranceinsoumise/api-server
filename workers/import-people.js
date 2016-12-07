@@ -3,7 +3,7 @@
 const request = require('request-promise');
 const redis = require('redis').createClient();
 
-const NBAPIKey = 'e2e9cdeb3f70012949c6e90dc69b028d739846f8dad45ceee44e4e78d22c0533';
+const NBAPIKey = 'f9a2e97d9852d51b9d3b7e000af6285afe59d3a3163026c84370cc885e13896a';
 const NBNationSlug = 'plp';
 const MailTrainKey = '907068facb88f555ff005261923f861079542ec6';
 
@@ -71,7 +71,11 @@ function fetchPage(nextPage) {
   })
   .catch(err => {
     // Crawling failed
-    console.log(err);
+    if (err.statusCode === 403) {
+      redis.del('import-events-next-page');
+      nextPage = initUrl;
+    }
+    console.log(err.name);
   })
   .finally(() => {
     setTimeout(() => {
