@@ -52,7 +52,7 @@ function fetchPage(nextPage) {
         count[action]++;
       }
 
-      if (request.email) {
+      if (result.email) {
         request.post({
           url: 'http://localhost:5000/people',
           headers: {
@@ -60,10 +60,12 @@ function fetchPage(nextPage) {
           },
           body: {
             email: result.email,
-            id: result.id
+            id: result.id,
+            tags: result.tags
           },
           json: true
         });
+        console.log(result.tags);
       }
     });
 

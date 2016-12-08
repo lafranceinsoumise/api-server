@@ -35,6 +35,12 @@ schema = {
     },
     'syndicat': {
         'type': 'string'
+    },
+    'tags': {
+        'type': 'list',
+        'schema': {
+            'type': 'string'
+        }
     }
 }
 authentication = MyBasicAuth
