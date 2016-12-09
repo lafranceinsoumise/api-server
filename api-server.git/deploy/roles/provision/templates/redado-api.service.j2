@@ -5,6 +5,7 @@ Description=Redado API Server
 {% if vagrant is defined %}
 Environment=DEBUG=true
 {% endif %}
+Environment=API_KEY={{ api_key }}
 WorkingDirectory=/srv/server/api/
 StandardOutput=syslog
 SyslogIdentifier=redado-api
