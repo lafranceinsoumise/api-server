@@ -56,7 +56,7 @@ function fetchPage(nextPage) {
         request.post({
           url: 'http://localhost:5000/people',
           headers: {
-            Authorization: 'Basic ' + base64.encode('admin:')
+            Authorization: 'Basic ' + base64.encode(`ethaelahz5Rei4seekiiGh1aipias6xohmohmaej9oodee6chahGh8ua3OorieCh:`)
           },
           body: {
             email: result.email,
