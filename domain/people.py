@@ -3,7 +3,7 @@ from eve.auth import TokenAuth
 
 class MyBasicAuth(TokenAuth):
     def check_auth(self, token, allowed_roles, resource, method):
-        return token == 'admin'
+        return token == 'ethaelahz5Rei4seekiiGh1aipias6xohmohmaej9oodee6chahGh8ua3OorieCh'
 
 allow_unknown = True
 item_title = 'person'
