@@ -18,13 +18,7 @@ const whiteList = [
 
 var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBSiteSlug}/pages/events?limit=100&access_token=${NBAPIKey}`;
 
-var updateRSVP = co.wrap(function * (eventTag, personId) {
-  var res = yield request.get({
-    url: `http://localhost:5000/people/${personId}`,
-    json: true,
-    resolveWithFullResponse: true
-  });
-
+var throttle = co.wrap(function * (res) {
   if (res.headers['x-ratelimit-remaining'] < 10) {
     var delayTime = res.headers['x-ratelimit-reset'] * 1000 -
       (new Date(res.headers.expires).getTime());
@@ -32,21 +26,44 @@ var updateRSVP = co.wrap(function * (eventTag, personId) {
     yield delay(delayTime);
     console.log('Pause end.');
   }
+});
 
-  var email = res.body.person.email;
+/**
+ * Update RSVP
+ * @type {[type]}
+ */
+var updateRSVP = co.wrap(function * (mailtrainTag, personId) {
+  // Get email from te person nationbuilder id
+  var r;
+  try {
+    r = yield request.get({
+      url: `http://localhost:5000/people/${personId}`,
+      json: true,
+      resolveWithFullResponse: true
+    });
+  } catch (e) {
+    console.log(e);
+  }
+
+  yield throttle(r);
+  var email = r.body.person.email;
   if (!email) {
     return;
   }
 
-  var tags = res.body.person.tags.filter(tag => (-1 !== whiteList.indexOf(tag)));
-  tags = tags.concat(eventTag).join(', ');
+  // Find tags and zipcode
+  var tags = r.body.person.tags.filter(tag => (whiteList.indexOf(tag) !== -1));
+  tags = tags.concat(mailtrainTag).join(', ');
+
+  var zipcode = (r.body.person.primary_address &&
+    r.body.person.primary_address.zip) || null;
 
   request.post({
     url: `https://newsletter.jlm2017.fr/api/subscribe/SyWda9pi?access_token=${MailTrainKey}`,
     body: {
-      EMAIL: res.body.person.email,
+      EMAIL: r.body.person.email,
       MERGE_TAGS: tags,
-      MERGE_ZIPCODE: (res.body.person.primary_address && res.body.person.primary_address.zip) || null
+      MERGE_ZIPCODE: zipcode
     },
     json: true
   });
@@ -56,44 +73,47 @@ var updateRSVP = co.wrap(function * (eventTag, personId) {
  * Update event
  * @type {[type]}
  */
-var updateEvent = co.wrap(function * (result) {
-  console.log('Update event ' + result.id);
-  var resource = result.calendar_id === 3 ? 'groups' : 'events';
+var updateEvent = co.wrap(function * (nbEvent) {
+  console.log('Update event ' + nbEvent.id);
 
+  // Which resource are we using on api.jlm2017.fr
+  var resource = nbEvent.calendar_id === 3 ? 'groups' : 'events';
+
+  // Construct our POST body
   var body = {
-    id: result.id,
-    name: result.name,
-    slug: result.slug,
-    path: result.path,
-    tags: result.tags,
-    published: (result.status.indexOf('publiée') !== -1),
+    id: nbEvent.id,
+    name: nbEvent.name,
+    slug: nbEvent.slug,
+    path: nbEvent.path,
+    tags: nbEvent.tags,
+    published: (nbEvent.status.indexOf('publiée') !== -1),
     contact: {
-      name: result.contact.name
+      name: nbEvent.contact.name
     }
   };
 
-  if (result.contact.show_phone && result.contact.phone) {
-    body.contact.phone = result.contact.phone;
+  if (nbEvent.contact.show_phone && nbEvent.contact.phone) {
+    body.contact.phone = nbEvent.contact.phone;
   }
 
-  if (result.contact.show_email && result.contact.email) {
-    body.contact.email = result.contact.email;
+  if (nbEvent.contact.show_email && nbEvent.contact.email) {
+    body.contact.email = nbEvent.contact.email;
   }
 
-  if (result.venue && result.venue.address && result.venue.address.lng &&
-  result.venue.address.lat) {
+  if (nbEvent.venue && nbEvent.venue.address && nbEvent.venue.address.lng &&
+  nbEvent.venue.address.lat) {
     body.coordinates = {
       type: 'Point',
       coordinates: [
-        Number(result.venue.address.lng),
-        Number(result.venue.address.lat)
+        Number(nbEvent.venue.address.lng),
+        Number(nbEvent.venue.address.lat)
       ]
     };
   }
 
-  if (result.calendar_id !== 3) {
-    body.startTime = new Date(result.start_time).toUTCString();
-    switch (result.calendar_id) {
+  if (nbEvent.calendar_id !== 3) {
+    body.startTime = new Date(nbEvent.start_time).toUTCString();
+    switch (nbEvent.calendar_id) {
       case 4:
         body.agenda = 'evenements_locaux';
         break;
@@ -108,59 +128,48 @@ var updateEvent = co.wrap(function * (result) {
     }
   }
 
-  var tag = (resource === 'groups' ? 'groupes_appui' : body.agenda);
-  if (tag) {
-    var rsvps = yield request.get({
-      url: `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBSiteSlug}/pages/events/${result.id}/rsvps?limit=100&access_token=${NBAPIKey}`,
-      json: true,
-      resolveWithFullResponse: true
-    });
-
-    if (rsvps.headers['x-ratelimit-remaining'] < 10) {
-      var delayTime = rsvps.headers['x-ratelimit-reset'] * 1000 -
-        (new Date(rsvps.headers.expires).getTime());
-      console.log('Pause during ' + delayTime);
-      yield delay(delayTime);
-      console.log('Pause end.');
-    }
-
-    for (var i = 0; i < rsvps.body.results.length; i++) {
-      yield updateRSVP(tag, rsvps.body.results[i].person_id);
-    }
-  }
-
   try {
-    var res = yield request.get({
-      url: `http://localhost:5000/${resource}/${result.id}`,
+    // Does the event already exist in the API ?
+    let res = yield request.get({
+      url: `http://localhost:5000/${resource}/${nbEvent.id}`,
       json: true,
       resolveWithFullResponse: true
     });
 
-    body._id = res.body._id;
-    try {
-      require('assert').deepEqual(body, res.body);
-    } catch (e) {
-      return request.put({
-        url: `http://localhost:5000/${resource}/${res.body._id}`,
-        body: body,
-        headers: {
-          'If-Match': res.body._etag
-        },
-        json: true
-      });
-    }
-  } catch (err) {
+    yield request.put({
+      url: `http://localhost:5000/${resource}/${res.body._id}`,
+      body: body,
+      headers: {
+        'If-Match': res.body._etag
+      },
+      json: true
+    });
+  } catch (err) { // The event does not exists
     if (err.statusCode !== 404) throw err;
 
-    if (!body.published) {
+    if (!body.published) { // Do nothing is event is not published.
       return;
     }
 
-    return request.post({
+    yield request.post({ // Post the event on the API
       url: `http://localhost:5000/${resource}`,
       body: body,
       json: true
     });
+  }
+
+  // Update RSVPs
+  var mailtrainTag = (resource === 'groups' ? 'groupes_appui' : body.agenda);
+  var res = yield request.get({
+    url: `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBSiteSlug}/pages/events/${nbEvent.id}/res?limit=100&access_token=${NBAPIKey}`,
+    json: true,
+    resolveWithFullResponse: true
+  });
+
+  yield throttle(res);
+
+  for (var i = 0; i < res.body.results.length; i++) {
+    yield updateRSVP(mailtrainTag, res.body.results[i].person_id);
   }
 });
 
@@ -176,14 +185,7 @@ var fetchPage = co.wrap(function * (nextPage) {
       json: true,
       resolveWithFullResponse: true
     });
-
-    if (res.headers['x-ratelimit-remaining'] < 10) {
-      var delayTime = res.headers['x-ratelimit-reset'] * 1000 -
-        (new Date(res.headers.expires).getTime());
-      console.log('Pause during ' + delayTime);
-      yield delay(delayTime);
-      console.log('Pause end.');
-    }
+    yield throttle(res);
 
     console.log(`Fetched ${nextPage}`);
 
@@ -207,6 +209,7 @@ var fetchPage = co.wrap(function * (nextPage) {
   }
 });
 
+// Start
 redis.get('import-events-next-page', (err, reply) => {
   if (err) console.log(err);
 
