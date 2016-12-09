@@ -20,7 +20,7 @@ var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBSiteSl
 
 var updateRSVP = co.wrap(function * (eventTag, personId) {
   var res = yield request.get({
-    url: `https://${NBNationSlug}.nationbuilder.com/api/v1/people/${personId}?&access_token=${NBAPIKey}`,
+    url: `http://localhost:5000/people/${personId}`,
     json: true,
     resolveWithFullResponse: true
   });
