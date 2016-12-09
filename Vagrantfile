@@ -77,7 +77,8 @@ Vagrant.configure(2) do |config|
     ansible.extra_vars = {
       vagrant: "true",
       domain: "redado.dev",
-      api_domain: "api.redado.dev"
+      api_domain: "api.redado.dev",
+      api_key: "key"
     }
   end
 end
