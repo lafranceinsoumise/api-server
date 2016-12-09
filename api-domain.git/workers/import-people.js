@@ -2,6 +2,7 @@
 
 const request = require('request-promise');
 const redis = require('redis').createClient();
+const base64 = require('js-base64').Base64;
 
 const NBAPIKey = 'f9a2e97d9852d51b9d3b7e000af6285afe59d3a3163026c84370cc885e13896a';
 const NBNationSlug = 'plp';
@@ -51,11 +52,21 @@ function fetchPage(nextPage) {
         count[action]++;
       }
 
-      /* request.post({
-        url: 'http://localhost:5000/people',
-        body: body,
-        json: true
-      }); */
+      if (result.email) {
+        request.post({
+          url: 'http://localhost:5000/people',
+          headers: {
+            Authorization: 'Basic ' + base64.encode(`ethaelahz5Rei4seekiiGh1aipias6xohmohmaej9oodee6chahGh8ua3OorieCh:`)
+          },
+          body: {
+            email: result.email,
+            id: result.id,
+            tags: result.tags
+          },
+          json: true
+        });
+        console.log(result.tags);
+      }
     });
 
     console.log(
