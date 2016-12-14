@@ -3,10 +3,12 @@
 const request = require('request-promise');
 const redis = require('redis').createClient();
 const base64 = require('js-base64').Base64;
+const co = require('co');
 
 const NBAPIKey = 'f9a2e97d9852d51b9d3b7e000af6285afe59d3a3163026c84370cc885e13896a';
 const NBNationSlug = 'plp';
 const MailTrainKey = '907068facb88f555ff005261923f861079542ec6';
+const APIKey = 'ethaelahz5Rei4seekiiGh1aipias6xohmohmaej9oodee6chahGh8ua3OorieCh';
 
 const whiteList = [
   'créateur groupe d\'appui',
@@ -16,84 +18,104 @@ const whiteList = [
 
 var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/people?limit=100&access_token=${NBAPIKey}`;
 
+var updatePerson = co.wrap(function * (nbPerson) {
+  if (!nbPerson.email) return;
+  // Update mailtrain
+  var action = nbPerson.email_opt_in === true ? 'subscribe' : 'unsubscribe';
+  var tags = nbPerson.tags.filter(tag => (whiteList.indexOf(tag) !== -1));
+  var zipcode = (nbPerson.primary_address &&
+      nbPerson.primary_address.zip) || null;
+
+  try {
+    yield request.post({
+      url: `https://newsletter.jlm2017.fr/api/${action}/SyWda9pi?access_token=${MailTrainKey}`,
+      body: {
+        EMAIL: nbPerson.email,
+        MERGE_TAGS: tags,
+        MERGE_ZIPCODE: zipcode
+      },
+      json: true
+    });
+  } catch (err) {
+    console.log(`Error updating ${nbPerson.email} on Mailtrain`, err.message);
+  }
+
+  var body = {
+    email: nbPerson.email,
+    id: nbPerson.id,
+    tags: nbPerson.tags
+  };
+
+  try {
+    // Does the person already exist in the API ?
+    let res = yield request.get({
+      url: `http://localhost:5000/people/${nbPerson.id}`,
+      json: true,
+      headers: {
+        Authorization: 'Basic ' + base64.encode(`${APIKey}:`)
+      },
+      resolveWithFullResponse: true
+    });
+
+    yield request.put({
+      url: `http://localhost:5000/people/${res.body._id}`,
+      body: body,
+      headers: {
+        'If-Match': res.body._etag,
+        'Authorization': 'Basic ' + base64.encode(`${APIKey}:`)
+      },
+      json: true
+    });
+  } catch (err) {
+    if (err.statusCode === 404) { // The event does not exists
+      try {
+        return yield request.post({ // Post the event on the API
+          url: 'http://localhost:5000/people',
+          body: body,
+          headers: {
+            Authorization: 'Basic ' + base64.encode(`${APIKey}:`)
+          },
+          json: true
+        });
+      } catch (err) {
+        console.log(`Error while creating ${nbPerson.email}:`, err.message);
+      }
+    }
+
+    console.log(`Error while updating ${nbPerson.email}:`, err.message);
+  }
+});
+
 /**
  * Fetch next page of people
  * @param  {string} nextPage The URL of the next page.
  */
-function fetchPage(nextPage) {
-  request({
-    url: nextPage,
-    headers: {Accept: 'application/json'},
-    json: true,
-    resolveWithFullResponse: true
-  })
-  .then(function(res) {
-    console.log(`Fetched ${nextPage}`);
-
-    var count = {
-      subscribe: 0,
-      unsubscribe: 0
-    };
-
-    res.body.results.forEach(result => {
-      if (result.email) {
-        // Update mailtrain
-        var action = result.email_opt_in === true ? 'subscribe' : 'unsubscribe';
-        request.post({
-          url: `https://newsletter.jlm2017.fr/api/${action}/SyWda9pi?access_token=${MailTrainKey}`,
-          body: {
-            EMAIL: result.email,
-            MERGE_TAGS: result.tags.filter(tag => (whiteList.includes(tag))).join(', '),
-            MERGE_ZIPCODE: (result.primary_address && result.primary_address.zip) || null
-          },
-          json: true
-        });
-
-        count[action]++;
-      }
-
-      if (result.email) {
-        request.post({
-          url: 'http://localhost:5000/people',
-          headers: {
-            Authorization: 'Basic ' + base64.encode(`ethaelahz5Rei4seekiiGh1aipias6xohmohmaej9oodee6chahGh8ua3OorieCh:`)
-          },
-          body: {
-            email: result.email,
-            id: result.id,
-            tags: result.tags
-          },
-          json: true
-        });
-        console.log(result.tags);
-      }
+var fetchPage = co.wrap(function * (page) {
+  var nextPage;
+  try {
+    var res = yield request({
+      url: page,
+      headers: {Accept: 'application/json'},
+      json: true,
+      resolveWithFullResponse: true
     });
 
-    console.log(
-      `Subcribed ${count.subscribe} people ` +
-      `and unsubscribed ${count.unsubscribe}.`
-    );
-
+    console.log(`Fetched ${page}`);
     nextPage = res.body.next ?
       `https://${NBNationSlug}.nationbuilder.com${res.body.next}&access_token=${NBAPIKey}` :
       initUrl;
-
     redis.set('import-people-next-page', nextPage);
-  })
-  .catch(err => {
-    // Crawling failed
-    if (err.statusCode === 403) {
-      redis.del('import-events-next-page');
-      nextPage = initUrl;
+    for (var i = 0; i < res.body.results.length; i += 10) {
+      yield res.body.results.slice(i, i + 10).map(updatePerson);
     }
-    console.log(err.name);
-  })
-  .finally(() => {
+  } catch (err) {
+    console.log('Error while fetching page', page, err.message);
+  } finally {
     setTimeout(() => {
-      fetchPage(nextPage);
+      fetchPage(nextPage || page);
     }, 1000);
-  });
-}
+  }
+});
 
 redis.get('import-people-next-page', (err, reply) => {
   if (err) console.log(err);

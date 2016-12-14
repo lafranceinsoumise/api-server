@@ -8,6 +8,10 @@ class MyBasicAuth(TokenAuth):
 allow_unknown = True
 item_title = 'person'
 resource_methods = ['GET', 'POST']
+additional_lookup = {'field': 'id'}
+mongo_indexes = {
+    'id': ([('id', 1)], {'background': True})
+}
 schema = {
     'id': {
         'type': 'integer',

@@ -4,11 +4,13 @@ const co = require('co');
 const delay = require('timeout-as-promise');
 const request = require('request-promise');
 const redis = require('redis').createClient();
+const base64 = require('js-base64').Base64;
 
 const NBAPIKey = '3ef2a9dac9decd45857c59cd1fd1ec739a9cfbd725e2ad4e617076a8d4dfd932';
 const NBNationSlug = 'plp';
 const NBSiteSlug = 'plp';
 const MailTrainKey = '907068facb88f555ff005261923f861079542ec6';
+const APIKey = 'ethaelahz5Rei4seekiiGh1aipias6xohmohmaej9oodee6chahGh8ua3OorieCh';
 
 const whiteList = [
   'créateur groupe d\'appui',
@@ -38,30 +40,33 @@ var updateRSVP = co.wrap(function * (mailtrainTag, personId) {
   try {
     r = yield request.get({
       url: `http://localhost:5000/people/${personId}`,
+      headers: {
+        Authorization: 'Basic ' + base64.encode(`${APIKey}:`)
+      },
       json: true,
       resolveWithFullResponse: true
     });
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(`Error while fetching person ${personId} email:`, err.message);
+    return;
   }
 
-  yield throttle(r);
-  var email = r.body.person.email;
+  var email = r.body.email;
   if (!email) {
     return;
   }
 
   // Find tags and zipcode
-  var tags = r.body.person.tags.filter(tag => (whiteList.indexOf(tag) !== -1));
+  var tags = r.body.tags.filter(tag => (whiteList.indexOf(tag) !== -1));
   tags = tags.concat(mailtrainTag).join(', ');
 
-  var zipcode = (r.body.person.primary_address &&
-    r.body.person.primary_address.zip) || null;
+  var zipcode = (r.body.primary_address &&
+    r.body.primary_address.zip) || null;
 
   request.post({
     url: `https://newsletter.jlm2017.fr/api/subscribe/SyWda9pi?access_token=${MailTrainKey}`,
     body: {
-      EMAIL: r.body.person.email,
+      EMAIL: r.body.email,
       MERGE_TAGS: tags,
       MERGE_ZIPCODE: zipcode
     },
@@ -74,7 +79,7 @@ var updateRSVP = co.wrap(function * (mailtrainTag, personId) {
  * @type {[type]}
  */
 var updateEvent = co.wrap(function * (nbEvent) {
-  console.log('Update event ' + nbEvent.id);
+  console.log('Update event:' + nbEvent.id);
 
   // Which resource are we using on api.jlm2017.fr
   var resource = nbEvent.calendar_id === 3 ? 'groups' : 'events';
@@ -144,24 +149,22 @@ var updateEvent = co.wrap(function * (nbEvent) {
       },
       json: true
     });
-  } catch (err) { // The event does not exists
-    if (err.statusCode !== 404) throw err;
+  } catch (err) {
+    if (err.statusCode === 404) { // The event does not exists
+      if (!body.published) return; // Do nothing is event is not published.
 
-    if (!body.published) { // Do nothing is event is not published.
-      return;
+      yield request.post({ // Post the event on the API
+        url: `http://localhost:5000/${resource}`,
+        body: body,
+        json: true
+      });
     }
-
-    yield request.post({ // Post the event on the API
-      url: `http://localhost:5000/${resource}`,
-      body: body,
-      json: true
-    });
   }
 
   // Update RSVPs
   var mailtrainTag = (resource === 'groups' ? 'groupes_appui' : body.agenda);
   var res = yield request.get({
-    url: `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBSiteSlug}/pages/events/${nbEvent.id}/res?limit=100&access_token=${NBAPIKey}`,
+    url: `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBSiteSlug}/pages/events/${nbEvent.id}/rsvps?limit=100&access_token=${NBAPIKey}`,
     json: true,
     resolveWithFullResponse: true
   });
@@ -177,35 +180,38 @@ var updateEvent = co.wrap(function * (nbEvent) {
  * Fetch next page of events
  * @param  {string} nextPage The URL of the next page.
  */
-var fetchPage = co.wrap(function * (nextPage) {
+var fetchPage = co.wrap(function * (page) {
+  var nextPage;
   try {
     var res = yield request({
-      url: nextPage,
+      url: page,
       headers: {Accept: 'application/json'},
       json: true,
       resolveWithFullResponse: true
     });
     yield throttle(res);
 
-    console.log(`Fetched ${nextPage}`);
-
-    for (var i = 0; i < res.body.results.length; i += 10) {
-      try {
-        yield res.body.results.slice(i, i + 10).map(updateEvent);
-      } catch (e) {
-        console.log(e.name);
-      }
-    }
-
+    console.log(`Fetched ${page}`);
     nextPage = res.body.next ?
       `https://${NBNationSlug}.nationbuilder.com${res.body.next}&access_token=${NBAPIKey}` :
       initUrl;
-
     redis.set('import-events-next-page', nextPage);
+
+    for (var i = 0; i < res.body.results.length; i += 10) {
+      yield res.body.results.slice(i, i + 10).map(nbEvent => {
+        try {
+          return updateEvent(nbEvent);
+        } catch (err) {
+          console.log(`Error while updating event ${nbEvent.id}:`, err.message);
+        }
+
+        return Promise.resolve();
+      });
+    }
   } catch (err) {
-    console.log(err.name);
+    console.log('Error while fetching page', page, err);
   } finally {
-    fetchPage(nextPage);
+    fetchPage(nextPage || page);
   }
 });
 
