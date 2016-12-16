@@ -31,10 +31,6 @@ schema:
   name:
     type: string
     required: true
-  slug:
-    type: string
-    required: true
-    unique: true
   path:
     type: string
     required: true
