@@ -78,11 +78,11 @@ var updatePerson = co.wrap(function * (nbPerson) {
           json: true
         });
       } catch (err) {
-        console.log(`Error while creating ${nbPerson.email}:`, err.message);
+        console.error(`Error while creating ${nbPerson.email}:`, err.message);
       }
     }
 
-    console.log(`Error while updating ${nbPerson.email}:`, err.message);
+    console.error(`Error while updating ${nbPerson.email}:`, err.message);
   }
 });
 
@@ -109,7 +109,7 @@ var fetchPage = co.wrap(function * (page) {
       yield res.body.results.slice(i, i + 10).map(updatePerson);
     }
   } catch (err) {
-    console.log('Error while fetching page', page, err.message);
+    console.error('Error while fetching page', page, err.message);
   } finally {
     setTimeout(() => {
       fetchPage(nextPage || page);
@@ -118,7 +118,7 @@ var fetchPage = co.wrap(function * (page) {
 });
 
 redis.get('import-people-next-page', (err, reply) => {
-  if (err) console.log(err);
+  if (err) console.error(err);
 
   fetchPage(reply || initUrl);
 });
