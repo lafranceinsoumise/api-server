@@ -8,10 +8,6 @@
   },
   "author": "Guillaume Royer <perso@guilro.com>",
   "license": "AGPL-3.0",
-  "devDependencies": {
-    "eslint": "^2.13.1",
-    "eslint-config-google": "^0.6.0"
-  },
   "dependencies": {
     "co": "^4.6.0",
     "js-base64": "^2.1.9",
@@ -21,5 +17,8 @@
   },
   "engines": {
     "node": ">=6.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.12.2"
   }
 }
