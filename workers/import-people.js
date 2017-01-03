@@ -43,9 +43,9 @@ var updatePerson = co.wrap(function * (nbPerson) {
     if (res.body.events && res.body.events.length > 0) events = 'evenements';
     if (res.body.groups && res.body.groups.length > 0) groups = 'groupe_appui';
 
-    yield request.patch({
+    yield request.put({
       url: `http://localhost:5000/people/${res.body._id}`,
-      body: body,
+      body: Object.assign(res.body, body),
       headers: {
         'If-Match': res.body._etag,
         'Authorization': 'Basic ' + base64.encode(`${APIKey}:`)
@@ -118,9 +118,7 @@ var fetchPage = co.wrap(function * (page) {
   } catch (err) {
     console.error('Error while fetching page', page, err.message);
   } finally {
-    setTimeout(() => {
-      fetchPage(nextPage || page);
-    }, 1000);
+    fetchPage(nextPage || page);
   }
 });
 
