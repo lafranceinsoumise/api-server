@@ -21,6 +21,8 @@ ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 
 DEBUG = os.getenv('DEBUG', False)
 
+XML=False
+
 log = getLogger('redado')
 log.addHandler(StreamHandler())
 
