@@ -20,31 +20,14 @@ var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/people?limit=100
 
 var updatePerson = co.wrap(function * (nbPerson) {
   if (!nbPerson.email) return;
-  // Update mailtrain
-  var action = nbPerson.email_opt_in === true ? 'subscribe' : 'unsubscribe';
-  var tags = nbPerson.tags.filter(tag => (whiteList.indexOf(tag) !== -1));
-  var zipcode = (nbPerson.primary_address &&
-      nbPerson.primary_address.zip) || null;
-
-  try {
-    yield request.post({
-      url: `https://newsletter.jlm2017.fr/api/${action}/SyWda9pi?access_token=${MailTrainKey}`,
-      body: {
-        EMAIL: nbPerson.email,
-        MERGE_TAGS: tags,
-        MERGE_ZIPCODE: zipcode
-      },
-      json: true
-    });
-  } catch (err) {
-    console.log(`Error updating ${nbPerson.email} on Mailtrain`, err.message);
-  }
 
   var body = {
     email: nbPerson.email,
     id: nbPerson.id,
     tags: nbPerson.tags
   };
+
+  var events, groups;
 
   try {
     // Does the person already exist in the API ?
@@ -57,7 +40,10 @@ var updatePerson = co.wrap(function * (nbPerson) {
       resolveWithFullResponse: true
     });
 
-    yield request.put({
+    if (res.body.events && res.body.events.length > 0) events = 'evenements';
+    if (res.body.groups && res.body.groups.length > 0) groups = 'groupe_appui';
+
+    yield request.patch({
       url: `http://localhost:5000/people/${res.body._id}`,
       body: body,
       headers: {
@@ -67,9 +53,9 @@ var updatePerson = co.wrap(function * (nbPerson) {
       json: true
     });
   } catch (err) {
-    if (err.statusCode === 404) { // The event does not exists
+    if (err.statusCode === 404) { // The person does not exists
       try {
-        return yield request.post({ // Post the event on the API
+        return yield request.post({ // Post the person on the API
           url: 'http://localhost:5000/people',
           body: body,
           headers: {
@@ -83,6 +69,27 @@ var updatePerson = co.wrap(function * (nbPerson) {
     }
 
     console.error(`Error while updating ${nbPerson.email}:`, err.message);
+  }
+
+  // Update mailtrain
+  var action = nbPerson.email_opt_in === true ? 'subscribe' : 'unsubscribe';
+  var tags = nbPerson.tags.filter(tag => (whiteList.indexOf(tag) !== -1));
+  var zipcode = (nbPerson.primary_address &&
+      nbPerson.primary_address.zip) || null;
+
+  try {
+    yield request.post({
+      url: `https://newsletter.jlm2017.fr/api/${action}/SyWda9pi?access_token=${MailTrainKey}`,
+      body: {
+        EMAIL: nbPerson.email,
+        MERGE_TAGS: tags,
+        MERGE_ZIPCODE: zipcode,
+        MERGE_INSCRIPTIONS: [events, groups].join(',')
+      },
+      json: true
+    });
+  } catch (err) {
+    console.error(`Error updating ${nbPerson.email} on Mailtrain`, err.message);
   }
 });
 
