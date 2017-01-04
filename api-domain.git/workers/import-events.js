@@ -59,6 +59,10 @@ var updateEvent = co.wrap(function * (nbEvent) {
         Number(nbEvent.venue.address.lat)
       ]
     };
+    body.location = {
+      name: nbEvent.venue.name,
+      address: nbEvent.venue.address.address1 + ', ' + nbEvent.venue.address.zip + ' ' + nbEvent.venue.address.city
+    }
   }
 
   if (nbEvent.calendar_id !== 3) {
