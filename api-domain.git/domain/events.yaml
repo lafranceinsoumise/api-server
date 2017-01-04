@@ -71,5 +71,12 @@ schema:
         type: string
       phone:
         type: string
+  location:
+    type: dict
+    schema:
+      name:
+        type: string
+      address:
+        type: string
   participants:
     type: integer
