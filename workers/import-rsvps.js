@@ -47,15 +47,19 @@ var updateRSVP = co.wrap(function * (resource, eventId, personId) {
   var body = {};
   body[resource] = [...new Set(r.body.events)].concat(eventId);
 
-  yield request.patch({
-    url: `http://localhost:5000/people/${r.body._id}`,
-    body: body,
-    headers: {
-      'If-Match': r.body._etag,
-      'Authorization': 'Basic ' + base64.encode(`${APIKey}:`)
-    },
-    json: true
-  });
+  try {
+    yield request.patch({
+      url: `http://localhost:5000/people/${r.body._id}`,
+      body: body,
+      headers: {
+        'If-Match': r.body._etag,
+        'Authorization': 'Basic ' + base64.encode(`${APIKey}:`)
+      },
+      json: true
+    });
+  } catch (err) {
+    console.error(`Error while updating person ${personId} rsvps:`, err.message);
+  }
 });
 
 /**
@@ -63,16 +67,20 @@ var updateRSVP = co.wrap(function * (resource, eventId, personId) {
  */
 var getRSVPS = co.wrap(function * (resource, item) {
   // Update RSVPs
-  var res = yield request.get({
-    url: `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBNationSlug}/pages/events/${item.id}/rsvps?limit=100&access_token=${NBAPIKey}`,
-    json: true,
-    resolveWithFullResponse: true
-  });
+  try {
+    var res = yield request.get({
+      url: `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBNationSlug}/pages/events/${item.id}/rsvps?limit=100&access_token=${NBAPIKey}`,
+      json: true,
+      resolveWithFullResponse: true
+    });
 
-  yield throttle(res);
+    yield throttle(res);
 
-  for (var i = 0; i < res.body.results.length; i++) {
-    yield updateRSVP(resource, item._id, res.body.results[i].person_id);
+    for (var i = 0; i < res.body.results.length; i++) {
+      yield updateRSVP(resource, item._id, res.body.results[i].person_id);
+    }
+  } catch (err) {
+    console.error(`Error while fetching event ${item.id} rsvps:`, err.message);
   }
 });
 
@@ -101,10 +109,12 @@ var fetchEvents = co.wrap(function * (resource) {
         return Promise.resolve();
       });
     }
+
+    console.log(`Updated ${i} persons.`);
   } catch (e) {
     console.log(e.message);
   } finally {
-    return fetchEvents(resource === 'events' ? 'groups' : 'events');
+    fetchEvents(resource === 'events' ? 'groups' : 'events');
   }
 });
 
