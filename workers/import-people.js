@@ -112,8 +112,8 @@ var fetchPage = co.wrap(function * (page) {
       `https://${NBNationSlug}.nationbuilder.com${res.body.next}&access_token=${NBAPIKey}` :
       initUrl;
     redis.set('import-people-next-page', nextPage);
-    for (var i = 0; i < res.body.results.length; i += 10) {
-      yield res.body.results.slice(i, i + 10).map(updatePerson);
+    for (var i = 0; i < res.body.results.length; i += 30) {
+      yield res.body.results.slice(i, i + 30).map(updatePerson);
     }
   } catch (err) {
     console.error('Error while fetching page', page, err.message);
