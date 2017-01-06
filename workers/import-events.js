@@ -42,6 +42,10 @@ var updateEvent = co.wrap(function * (nbEvent) {
     }
   };
 
+  if (nbEvent.intro) {
+    body.description = nbEvent.intro;
+  }
+
   if (nbEvent.contact.show_phone && nbEvent.contact.phone) {
     body.contact.phone = nbEvent.contact.phone;
   }
@@ -62,11 +66,12 @@ var updateEvent = co.wrap(function * (nbEvent) {
     body.location = {
       name: nbEvent.venue.name,
       address: nbEvent.venue.address.address1 + ', ' + nbEvent.venue.address.zip + ' ' + nbEvent.venue.address.city
-    }
+    };
   }
 
   if (nbEvent.calendar_id !== 3) {
     body.startTime = new Date(nbEvent.start_time).toUTCString();
+    body.endTime = new Date(nbEvent.end_time).toUTCString();
     switch (nbEvent.calendar_id) {
       case 4:
         body.agenda = 'evenements_locaux';
