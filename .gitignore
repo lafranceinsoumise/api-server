@@ -9,3 +9,4 @@ workers/*
 deploy/*.retry
 ubuntu-xenial-16.04-cloudimg-console.log
 inventory*
+*.pyc
