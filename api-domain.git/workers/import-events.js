@@ -34,6 +34,10 @@ var updateEvent = co.wrap(function * (nbEvent) {
   var body = {
     id: nbEvent.id,
     name: nbEvent.name,
+    slug: nbEvent.slug,
+    status: nbEvent.status,
+    author: nbEvent.author_id,
+    published_at: new Date(nbEvent.published_at).toUTCString(),
     path: nbEvent.path,
     tags: nbEvent.tags,
     published: (nbEvent.status.indexOf('publiée') !== -1),
@@ -41,6 +45,10 @@ var updateEvent = co.wrap(function * (nbEvent) {
       name: nbEvent.contact.name
     }
   };
+
+  if (nbEvent.intro) {
+    body.intro = nbEvent.intro;
+  }
 
   if (nbEvent.contact.show_phone && nbEvent.contact.phone) {
     body.contact.phone = nbEvent.contact.phone;

@@ -46,6 +46,20 @@ schema:
   name:
     type: string
     required: true
+  slug:
+    type: string
+    required: true
+  status:
+    type: string
+    required: true
+  author:
+    type: integer
+    required: true
+  published_at:
+    type: datetime
+    required: true
+  intro:
+    type: string
   path:
     type: string
     required: true
