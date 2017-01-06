@@ -46,19 +46,7 @@ schema:
   name:
     type: string
     required: true
-  slug:
-    type: string
-    required: true
-  status:
-    type: string
-    required: true
-  author:
-    type: integer
-    required: true
-  published_at:
-    type: datetime
-    required: true
-  intro:
+  description:
     type: string
   path:
     type: string
@@ -69,6 +57,9 @@ schema:
     schema:
       type: string
   startTime:
+    type: datetime
+    required: true
+  endTime:
     type: datetime
     required: true
   agenda:
