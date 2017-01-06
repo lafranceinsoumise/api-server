@@ -15,6 +15,8 @@ server {
   }
 }
 
+uwsgi_cache_path /tmp/nginx levels=1:2 keys_zone=redado:10m;
+
 server {
   listen 80;
 
@@ -33,6 +35,7 @@ server {
   location @redado-api {
     add_header Access-Control-Allow-Origin *;
     include uwsgi_params;
+    uwsgi_cache redado;
     uwsgi_pass unix:/tmp/redado-api.sock;
   }
 }
