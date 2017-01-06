@@ -32,6 +32,8 @@ schema:
   name:
     type: string
     required: true
+    description:
+    type: string
   path:
     type: string
     required: true
@@ -50,6 +52,13 @@ schema:
       email:
         type: string
       phone:
+        type: string
+  location:
+    type: dict
+    schema:
+      name:
+        type: string
+      address:
         type: string
   participants:
     type: integer
