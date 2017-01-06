@@ -32,7 +32,7 @@ schema:
   name:
     type: string
     required: true
-    description:
+  description:
     type: string
   path:
     type: string
