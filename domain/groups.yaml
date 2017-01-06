@@ -7,6 +7,7 @@ resource_methods:
 item_methods:
 - GET
 - PUT
+cache_expires: 60
 additional_lookup:
   field: id
 pagination: false
