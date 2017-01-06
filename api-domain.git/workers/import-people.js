@@ -13,7 +13,8 @@ const APIKey = 'ethaelahz5Rei4seekiiGh1aipias6xohmohmaej9oodee6chahGh8ua3OorieCh
 const whiteList = [
   'créateur groupe d\'appui',
   'convention : cars',
-  'convention : inscrit'
+  'convention : inscrit',
+  'agir groupe d\'appui'
 ];
 
 var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/people?limit=100&access_token=${NBAPIKey}`;
