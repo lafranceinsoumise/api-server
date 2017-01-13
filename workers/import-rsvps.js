@@ -69,7 +69,7 @@ var getRSVPS = co.wrap(function * (resource, item) {
   // Update RSVPs
   try {
     var res = yield request.get({
-      url: `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBNationSlug}/pages/events/${item.id}/rsvps?access_token=${NBAPIKey}`,
+      url: `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBNationSlug}/pages/events/${item.id}/rsvps?limit=100&access_token=${NBAPIKey}`,
       json: true,
       resolveWithFullResponse: true
     });
