@@ -14,7 +14,8 @@ const whiteList = [
   'créateur groupe d\'appui',
   'convention : cars',
   'convention : inscrit',
-  'agir groupe d\'appui'
+  'agir groupe d\'appui',
+  'groupe d\'appuis certifié'
 ];
 
 var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/people?limit=100&access_token=${NBAPIKey}`;

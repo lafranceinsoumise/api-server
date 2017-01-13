@@ -79,6 +79,22 @@ var getRSVPS = co.wrap(function * (resource, item) {
     for (var i = 0; i < res.body.results.length; i++) {
       yield updateRSVP(resource, item._id, res.body.results[i].person_id);
     }
+    try {
+      item.participants = i;
+      yield request.put({
+        url: `http://localhost:5000/${resource}/${item._id}`,
+        body: item,
+        headers: {
+          'If-Match': item._etag
+        },
+        json: true
+      });
+    } catch (e) {
+      if (e.statusCode === 404) { // The event does not exists
+        console.error(`Error while updating event ${item.id}: it doesn't exist yet in the data base`);
+      }
+      console.error(`Error while updating event ${item.id}:`, e.message);
+    }
   } catch (err) {
     console.error(`Error while fetching event ${item.id} rsvps:`, err.message);
   }
