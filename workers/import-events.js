@@ -1,5 +1,6 @@
 'use strict';
 
+const base64 = require('js-base64').Base64;
 const co = require('co');
 const delay = require('timeout-as-promise');
 const request = require('request-promise');
@@ -7,6 +8,7 @@ const redis = require('redis').createClient();
 
 const NBAPIKey = '3ef2a9dac9decd45857c59cd1fd1ec739a9cfbd725e2ad4e617076a8d4dfd932';
 const NBNationSlug = 'plp';
+const APIKey = 'Fae9Shohphe0eiro0voh7shiemohxomaimahvai3eejood5oaxah6uakeep3eeva';
 
 var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBNationSlug}/pages/events?limit=100&access_token=${NBAPIKey}`;
 
@@ -99,7 +101,8 @@ var updateEvent = co.wrap(function * (nbEvent) {
       url: `http://localhost:5000/${resource}/${res.body._id}`,
       body: body,
       headers: {
-        'If-Match': res.body._etag
+        'If-Match': res.body._etag,
+        'Authorization': 'Basic ' + base64.encode(`${APIKey}:`)
       },
       json: true
     });
