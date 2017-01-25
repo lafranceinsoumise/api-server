@@ -7,7 +7,7 @@ const request = require('request-promise');
 
 const NBAPIKey = '8590e41fd59899ea739b57ac072b13fd635e010e2f3932c10db9e25555efb4e6';
 const NBNationSlug = 'plp';
-const APIKey = 'ethaelahz5Rei4seekiiGh1aipias6xohmohmaej9oodee6chahGh8ua3OorieCh';
+const APIKey = 'Fae9Shohphe0eiro0voh7shiemohxomaimahvai3eejood5oaxah6uakeep3eeva';
 
 var throttle = co.wrap(function * (res) {
   if (res.headers['x-ratelimit-remaining'] < 10) {
