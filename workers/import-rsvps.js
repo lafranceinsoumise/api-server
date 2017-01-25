@@ -45,7 +45,7 @@ var updateRSVP = co.wrap(function * (resource, eventId, personId) {
   }
 
   var body = {};
-  body[resource] = r.body.events ? [...new Set(r.body.events.contat(eventId))] : [eventId];
+  body[resource] = r.body.events ? [...new Set(r.body.events.concat(eventId))] : [eventId];
 
   try {
     yield request.patch({

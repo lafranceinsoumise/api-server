@@ -149,7 +149,7 @@ var fetchPage = co.wrap(function * (page) {
       });
     }
   } catch (err) {
-    console.log('Error while fetching page', page, err);
+    console.log('Error while fetching page', page, err.message);
   } finally {
     fetchPage(nextPage || page);
   }
