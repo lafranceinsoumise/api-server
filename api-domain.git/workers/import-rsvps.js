@@ -85,7 +85,8 @@ var getRSVPS = co.wrap(function * (resource, item) {
         url: `http://localhost:5000/${resource}/${item._id}`,
         body: item,
         headers: {
-          'If-Match': item._etag
+          'If-Match': item._etag,
+          'Authorization': 'Basic ' + base64.encode(`${APIKey}:`)
         },
         json: true
       });
