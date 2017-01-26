@@ -21,14 +21,15 @@ ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 
 DEBUG = os.getenv('DEBUG', False)
 
-XML=False
+XML = False
 
 log = getLogger('redado')
 log.addHandler(StreamHandler())
 
+
 def load_py_file(filename):
     resource = os.path.split(os.path.splitext(filename)[0])[1]
-    d = imp.load_source(resource, filename)
+    d = imp.load_source(resource + '_redado_domain', filename)
     definition = {}
     for key in dir(d):
         if '__' not in key:
