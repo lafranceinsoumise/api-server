@@ -84,6 +84,8 @@ var updateEvent = co.wrap(function * (nbEvent) {
       case 15:
         body.agenda = 'reunions_circonscription';
         break;
+      case 16:
+        body.agenda = 'reunions_publiques'
       default:
         break;
     }
