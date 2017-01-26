@@ -32,14 +32,9 @@ schema = {
         'required': True,
         'unique': True
     },
-    'support_level': {
-        'type': 'integer'
-    },
-    'is_volunteer': {
-        'type': 'boolean'
-    },
-    'syndicat': {
-        'type': 'string'
+    'email_opt_in': {
+        'type': 'boolean',
+        'required': True
     },
     'tags': {
         'type': 'list',

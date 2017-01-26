@@ -25,6 +25,7 @@ var updatePerson = co.wrap(function * (nbPerson) {
 
   var body = {
     email: nbPerson.email,
+    email_opt_in: nbPerson.email_opt_in,
     id: nbPerson.id,
     tags: nbPerson.tags
   };
