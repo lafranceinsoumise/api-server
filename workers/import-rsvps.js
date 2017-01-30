@@ -5,9 +5,9 @@ const base64 = require('js-base64').Base64;
 const delay = require('timeout-as-promise');
 const request = require('request-promise');
 
-const NBAPIKey = '8590e41fd59899ea739b57ac072b13fd635e010e2f3932c10db9e25555efb4e6';
-const NBNationSlug = 'plp';
-const APIKey = 'Fae9Shohphe0eiro0voh7shiemohxomaimahvai3eejood5oaxah6uakeep3eeva';
+const NBAPIKey = process.env.NB_API_KEY;
+const NBNationSlug = process.env.NB_SLUG;
+const APIKey = process.env.API_KEY;
 
 var throttle = co.wrap(function * (res) {
   if (res.headers['x-ratelimit-remaining'] < 10) {
