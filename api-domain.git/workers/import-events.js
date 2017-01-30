@@ -115,6 +115,9 @@ var updateEvent = co.wrap(function * (nbEvent) {
       yield request.post({ // Post the event on the API
         url: `http://localhost:5000/${resource}`,
         body: body,
+        headers: {
+          'Authorization': 'Basic ' + base64.encode(`${APIKey}:`)
+        },
         json: true
       });
     }
