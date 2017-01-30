@@ -3,6 +3,10 @@ Description=Redado Worker {{ item.path | basename }}
 
 [Service]
 Environment=NODE_ENV=production
+Environment=API_KEY={{ api_key }}
+Environment=NB_API_KEY={{ nb_api_key }}
+Environment=NB_SLUG={{ nb_slug }}
+Environment=MAILTRAIN_KEY={{ mailtrain_key }}
 WorkingDirectory=/srv/project/workers/
 StandardOutput=syslog
 SyslogIdentifier=redado-worker-{{ item.path | basename }}
