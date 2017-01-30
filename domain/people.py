@@ -11,7 +11,8 @@ resource_methods = ['GET', 'POST']
 item_methods = ['GET', 'PUT', 'PATCH']
 additional_lookup = {'field': 'id'}
 mongo_indexes = {
-    'id': ([('id', 1)], {'background': True})
+    'id': ([('id', 1)], {'background': True}),
+    'email': ([('email', 1)], {'background': True})
 }
 schema = {
     'id': {
