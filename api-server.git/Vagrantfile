@@ -78,7 +78,10 @@ Vagrant.configure(2) do |config|
       vagrant: "true",
       domain: "redado.dev",
       api_domain: "api.redado.dev",
-      api_key: "key"
+      api_key: "",
+      nb_api_key: "",
+      mailtrain_key: "",
+      nb_slug: ""
     }
   end
 end
