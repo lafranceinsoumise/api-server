@@ -4,7 +4,9 @@ Description=Redado Worker {{ item.path | basename }}
 [Service]
 Environment=NODE_ENV=production
 Environment=API_KEY={{ api_key }}
-Environment=NB_API_KEY={{ nb_api_key }}
+Environment=NB_API_KEY_1={{ nb_api_key_1 }}
+Environment=NB_API_KEY_2={{ nb_api_key_2 }}
+Environment=NB_API_KEY_3={{ nb_api_key_3 }}
 Environment=NB_SLUG={{ nb_slug }}
 Environment=MAILTRAIN_KEY={{ mailtrain_key }}
 WorkingDirectory=/srv/project/workers/
