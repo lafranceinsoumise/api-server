@@ -6,9 +6,9 @@ const delay = require('timeout-as-promise');
 const request = require('request-promise');
 const redis = require('redis').createClient();
 
-const NBAPIKey = '3ef2a9dac9decd45857c59cd1fd1ec739a9cfbd725e2ad4e617076a8d4dfd932';
-const NBNationSlug = 'plp';
-const APIKey = 'Fae9Shohphe0eiro0voh7shiemohxomaimahvai3eejood5oaxah6uakeep3eeva';
+const NBAPIKey = process.env.NB_API_KEY;
+const NBNationSlug = process.env.NB_SLUG;
+const APIKey = process.env.API_KEY;
 
 var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBNationSlug}/pages/events?limit=100&access_token=${NBAPIKey}`;
 
