@@ -1,9 +1,16 @@
 from eve.auth import TokenAuth
 
 
+def get_api_key():
+    import os
+    return os.environ['API_KEY']
+
+api_key = get_api_key()
+
+
 class MyBasicAuth(TokenAuth):
     def check_auth(self, token, allowed_roles, resource, method):
-        return token == 'Fae9Shohphe0eiro0voh7shiemohxomaimahvai3eejood5oaxah6uakeep3eeva'
+        return token == api_key
 
 allow_unknown = True
 item_title = 'person'
