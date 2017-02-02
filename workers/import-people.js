@@ -4,8 +4,9 @@ const request = require('request-promise');
 const redis = require('redis').createClient();
 const base64 = require('js-base64').Base64;
 const co = require('co');
+const delay = require('timeout-as-promise');
 
-const NBAPIKey = process.env.NB_API_KEY;
+const NBAPIKey = process.env.NB_API_KEY_2;
 const NBNationSlug = process.env.NB_SLUG;
 const MailTrainKey = process.env.MAILTRAIN_KEY;
 const APIKey = process.env.API_KEY;
@@ -18,7 +19,7 @@ const whiteList = [
   'groupe d\'appuis certifié'
 ];
 
-var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/people?limit=100&access_token=${NBAPIKey}`;
+var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/people?limit=100`;
 
 var updatePerson = co.wrap(function * (nbPerson) {
   if (!nbPerson.email) return;
@@ -104,7 +105,7 @@ var fetchPage = co.wrap(function * (page) {
   var nextPage;
   try {
     var res = yield request({
-      url: page,
+      url: page + `&access_token=${NBAPIKey}`,
       headers: {Accept: 'application/json'},
       json: true,
       resolveWithFullResponse: true
@@ -112,7 +113,7 @@ var fetchPage = co.wrap(function * (page) {
 
     console.log(`Fetched ${page}`);
     nextPage = res.body.next ?
-      `https://${NBNationSlug}.nationbuilder.com${res.body.next}&access_token=${NBAPIKey}` :
+      `https://${NBNationSlug}.nationbuilder.com${res.body.next}` :
       initUrl;
     redis.set('import-people-next-page', nextPage);
     for (var i = 0; i < res.body.results.length; i += 30) {
@@ -120,6 +121,7 @@ var fetchPage = co.wrap(function * (page) {
     }
   } catch (err) {
     console.error('Error while fetching page', page, err.message);
+    yield delay(5000);
   } finally {
     fetchPage(nextPage || page);
   }

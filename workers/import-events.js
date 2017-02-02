@@ -6,11 +6,11 @@ const delay = require('timeout-as-promise');
 const request = require('request-promise');
 const redis = require('redis').createClient();
 
-const NBAPIKey = process.env.NB_API_KEY;
+const NBAPIKey = process.env.NB_API_KEY_1;
 const NBNationSlug = process.env.NB_SLUG;
 const APIKey = process.env.API_KEY;
 
-var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBNationSlug}/pages/events?limit=100&access_token=${NBAPIKey}`;
+var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBNationSlug}/pages/events?limit=100`;
 
 var throttle = co.wrap(function * (res) {
   if (res.headers['x-ratelimit-remaining'] < 10) {
@@ -75,19 +75,20 @@ var updateEvent = co.wrap(function * (nbEvent) {
     body.startTime = new Date(nbEvent.start_time).toUTCString();
     body.endTime = new Date(nbEvent.end_time).toUTCString();
     switch (nbEvent.calendar_id) {
-      case 4:
-        body.agenda = 'evenements_locaux';
-        break;
-      case 7:
-        body.agenda = 'melenchon';
-        break;
-      case 15:
-        body.agenda = 'reunions_circonscription';
-        break;
-      case 16:
-        body.agenda = 'reunions_publiques'
-      default:
-        break;
+    case 4:
+      body.agenda = 'evenements_locaux';
+      break;
+    case 7:
+      body.agenda = 'melenchon';
+      break;
+    case 15:
+      body.agenda = 'reunions_circonscription';
+      break;
+    case 16:
+      body.agenda = 'reunions_publiques';
+      break;
+    default:
+      break;
     }
   }
 
@@ -132,7 +133,7 @@ var fetchPage = co.wrap(function * (page) {
   var nextPage;
   try {
     var res = yield request({
-      url: page,
+      url: page + `&access_token=${NBAPIKey}`,
       headers: {Accept: 'application/json'},
       json: true,
       resolveWithFullResponse: true
@@ -141,7 +142,7 @@ var fetchPage = co.wrap(function * (page) {
 
     console.log(`Fetched ${page}`);
     nextPage = res.body.next ?
-      `https://${NBNationSlug}.nationbuilder.com${res.body.next}&access_token=${NBAPIKey}` :
+      `https://${NBNationSlug}.nationbuilder.com${res.body.next}` :
       initUrl;
     redis.set('import-events-next-page', nextPage);
 
@@ -158,6 +159,7 @@ var fetchPage = co.wrap(function * (page) {
     }
   } catch (err) {
     console.log('Error while fetching page', page, err.message);
+    yield delay(5000);
   } finally {
     fetchPage(nextPage || page);
   }
