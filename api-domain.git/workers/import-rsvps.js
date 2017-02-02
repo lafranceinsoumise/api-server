@@ -5,7 +5,7 @@ const base64 = require('js-base64').Base64;
 const delay = require('timeout-as-promise');
 const request = require('request-promise');
 
-const NBAPIKey = process.env.NB_API_KEY;
+const NBAPIKey = process.env.NB_API_KEY_3;
 const NBNationSlug = process.env.NB_SLUG;
 const APIKey = process.env.API_KEY;
 
@@ -35,17 +35,12 @@ var updateRSVP = co.wrap(function * (resource, eventId, personId) {
       resolveWithFullResponse: true
     });
   } catch (err) {
-    console.error(`Error while fetching person ${personId} email:`, err.message);
-    return;
-  }
-
-  var email = r.body.email;
-  if (!email) {
+    console.error(`Error while fetching person ${personId} to update`, err.message);
     return;
   }
 
   var body = {};
-  body[resource] = r.body.events ? [...new Set(r.body.events.concat(eventId))] : [eventId];
+  body[resource] = r.body[resource] ? [...new Set(r.body[resource].concat(eventId))] : [eventId];
 
   try {
     yield request.patch({
@@ -91,9 +86,6 @@ var getRSVPS = co.wrap(function * (resource, item) {
         json: true
       });
     } catch (e) {
-      if (e.statusCode === 404) { // The event does not exists
-        console.error(`Error while updating event ${item.id}: it doesn't exist yet in the data base`);
-      }
       console.error(`Error while updating event ${item.id}:`, e.message);
     }
   } catch (err) {
