@@ -3,7 +3,6 @@ your.server.ip.address
 
 [server:vars]
 ansible_user=root
-domain=domain.com
 api_domain=api.domain.com
 api_key=nimportequoi
 nb_api_key_1=

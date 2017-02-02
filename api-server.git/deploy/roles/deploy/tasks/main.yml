@@ -1,5 +1,5 @@
 - name: Clone server repository
-  git: repo=git@github.com:guilro/redado-server.git dest=/srv/server version=master accept_hostkey=yes
+  git: repo=git@github.com:jlm2017/api-server.git dest=/srv/server version=master accept_hostkey=yes
 - name: Copy project repository
   synchronize:
     src: ../../project.git/
@@ -10,9 +10,3 @@
     - restart redado api
     - find workers services
     - restart workers
-- name: Clone app repository
-  git: repo=git@github.com:guilro/redado-app.git dest=/srv/app version=master accept_hostkey=yes
-  notify:
-    - install app npm modules
-    - compile app for production
-    - restart redado webapp

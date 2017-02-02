@@ -49,13 +49,6 @@
     - restart redado api
 - name: Ensure redado-api is running
   service: name=redado-api state=started enabled=yes
-- name: Install redado-app service file
-  template: src=redado-app.service.j2 dest=/etc/systemd/system/redado-app.service
-  notify:
-    - reload systemd
-    - restart redado webapp
-- name: Ensure redado-app is running
-  service: name=redado-app state=started enabled=yes
 - name: Find all workers file
   find: paths=/srv/project/workers patterns=*.js
   register: workers_files

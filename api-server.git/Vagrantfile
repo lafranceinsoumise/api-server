@@ -43,8 +43,7 @@ Vagrant.configure(2) do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   config.vm.synced_folder ".", "/srv/server"
-  config.vm.synced_folder "../redado-app.git/", "/srv/app"
-  config.vm.synced_folder "../project.git", "/srv/project"
+  config.vm.synced_folder "../api-domain.git", "/srv/project"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -76,7 +75,6 @@ Vagrant.configure(2) do |config|
     # ansible.verbose = "vvv"
     ansible.extra_vars = {
       vagrant: "true",
-      domain: "redado.dev",
       api_domain: "api.redado.dev",
       api_key: "",
       nb_api_key: "",
