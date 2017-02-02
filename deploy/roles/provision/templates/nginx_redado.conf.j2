@@ -1,20 +1,3 @@
-server {
-  listen 80;
-
-  server_name {{ domain }};
-
-  location ~ /.well-known {
-    root /var/www/letsencrypt/;
-    try_files $uri =404;
-    allow all;
-  }
-
-  location / {
-    include proxy_params;
-    proxy_pass http://localhost:3000;
-  }
-}
-
 uwsgi_cache_path /tmp/nginx levels=1:2 keys_zone=redado:10m;
 
 server {
