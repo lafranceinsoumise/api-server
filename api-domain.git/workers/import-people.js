@@ -1,15 +1,29 @@
 'use strict';
 
 const request = require('request-promise');
-const redis = require('redis').createClient();
-const base64 = require('js-base64').Base64;
 const co = require('co');
-const delay = require('timeout-as-promise');
+const yn = require('yn');
+const winston = require('winston');
+
+const api = require('./lib/api');
+const nb = require('./lib/nation-builder');
+const utils = require('./lib/utils');
 
 const NBAPIKey = process.env.NB_API_KEY_2;
 const NBNationSlug = process.env.NB_SLUG;
 const MailTrainKey = process.env.MAILTRAIN_KEY;
+const DisableMailTrain = !!yn(process.env.DISABLE_MAILTRAIN);
 const APIKey = process.env.API_KEY;
+
+const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+
+winston.configure({
+  level: LOG_LEVEL,
+  transports: [
+    new (winston.transports.Console)()
+  ]
+});
+
 
 const whiteList = [
   'créateur groupe d\'appui',
@@ -19,116 +33,115 @@ const whiteList = [
   'groupe d\'appuis certifié'
 ];
 
-var initUrl = `https://${NBNationSlug}.nationbuilder.com/api/v1/people?limit=100`;
 
-var updatePerson = co.wrap(function * (nbPerson) {
+const importPeople = co.wrap(function *(forever = true) {
+  do {
+    winston.profile('import_people');
+
+    winston.info('Starting new importing cycle');
+    let fetchNextPage = nb.fetchAll(NBNationSlug, 'people', {NBAPIKey});
+    while (fetchNextPage !== null) {
+      let results;
+      [results, fetchNextPage] = yield fetchNextPage();
+      if (results) {
+        for (let i = 0; i < results.length; i += 10) {
+          yield results.slice(i, i + 10).map(updatePerson);
+        }
+
+        winston.debug('Handled page');
+      }
+    }
+    winston.profile('import_people');
+  } while (forever);
+});
+
+
+const updatePerson = co.wrap(function *(nbPerson) {
   if (!nbPerson.email) return;
 
-  var body = {
+  let person = yield updatePersonInAPI(nbPerson);
+
+  let inscriptions = [];
+  if (person && person.events && person.events.length > 0) {
+    inscriptions.push('evenements');
+  }
+  if (person && person.groups && person.groups.length > 0) {
+    inscriptions.push('groupe_appui');
+  }
+
+  yield updatePersonInMailTrain(nbPerson, inscriptions.join(','));
+});
+
+
+const updatePersonInAPI = co.wrap(function*(nbPerson) {
+
+  let props = {
     email: nbPerson.email,
     email_opt_in: nbPerson.email_opt_in,
     id: nbPerson.id,
     tags: nbPerson.tags
   };
 
-  var events, groups;
-
+  let person;
+  // Does the person already exist in the API ?
   try {
-    // Does the person already exist in the API ?
-    let res = yield request.get({
-      url: `http://localhost:5000/people/${nbPerson.id}`,
-      json: true,
-      headers: {
-        Authorization: 'Basic ' + base64.encode(`${APIKey}:`)
-      },
-      resolveWithFullResponse: true
-    });
-
-    if (res.body.events && res.body.events.length > 0) events = 'evenements';
-    if (res.body.groups && res.body.groups.length > 0) groups = 'groupe_appui';
-
-    yield request.put({
-      url: `http://localhost:5000/people/${res.body._id}`,
-      body: Object.assign(res.body, body),
-      headers: {
-        'If-Match': res.body._etag,
-        'Authorization': 'Basic ' + base64.encode(`${APIKey}:`)
-      },
-      json: true
-    });
+    person = yield api.get_resource({resource:'people', id: nbPerson.id, APIKey: APIKey});
   } catch (err) {
-    if (err.statusCode === 404) { // The person does not exists
-      try {
-        return yield request.post({ // Post the person on the API
-          url: 'http://localhost:5000/people',
-          body: body,
-          headers: {
-            Authorization: 'Basic ' + base64.encode(`${APIKey}:`)
-          },
-          json: true
-        });
-      } catch (err) {
-        console.error(`Error while creating ${nbPerson.email}:`, err.message);
-      }
+    person = null;
+    if (err.statusCode !== 404) {
+      winston.error(`Failed fetching person ${nbPerson.id}`, {nbId: nbPerson.id, message: err.message});
+      return null;
     }
-
-    console.error(`Error while updating ${nbPerson.email}:`, err.message);
   }
 
+  if (person === null) {
+    // If the person did not exist, insert it
+    try {
+      yield api.post_resource('people', props, {APIKey});
+    } catch (err) {
+      winston.error(`Error while creating ${nbPerson.email}:`, err.message);
+    }
+  } else {
+    // If she did exist, patch it... but only if there's a change!
+    if (utils.anyPropChanged(person, props)) {
+      winston.debug(`Patching people/${person._id}`);
+      try {
+        yield api.patch_resource('people', person, props, APIKey);
+      } catch (err) {
+        winston.error(`Error while patching ${nbPerson.email}`, {nbId: nbPerson.id, person, message: err.message});
+      }
+    } else {
+      winston.debug(`Nothing changed with people/${person._id}`);
+    }
+  }
+
+  return person;
+});
+
+
+const updatePersonInMailTrain = co.wrap(function*(nbPerson, inscriptions) {
   // Update mailtrain
-  var action = nbPerson.email_opt_in === true ? 'subscribe' : 'unsubscribe';
-  var tags = nbPerson.tags.filter(tag => (whiteList.indexOf(tag) !== -1));
-  var zipcode = (nbPerson.primary_address &&
+  if (!DisableMailTrain) {
+    let action = nbPerson.email_opt_in === true ? 'subscribe' : 'unsubscribe';
+    let tags = nbPerson.tags.filter(tag => (whiteList.indexOf(tag) !== -1));
+    let zipcode = (nbPerson.primary_address &&
       nbPerson.primary_address.zip) || null;
 
-  try {
-    yield request.post({
-      url: `https://newsletter.jlm2017.fr/api/${action}/SyWda9pi?access_token=${MailTrainKey}`,
-      body: {
-        EMAIL: nbPerson.email,
-        MERGE_TAGS: tags,
-        MERGE_ZIPCODE: zipcode,
-        MERGE_INSCRIPTIONS: [events, groups].join(',')
-      },
-      json: true
-    });
-  } catch (err) {
-    console.error(`Error updating ${nbPerson.email} on Mailtrain`, err.message);
-  }
-});
-
-/**
- * Fetch next page of people
- * @param  {string} nextPage The URL of the next page.
- */
-var fetchPage = co.wrap(function * (page) {
-  var nextPage;
-  try {
-    var res = yield request({
-      url: page + `&access_token=${NBAPIKey}`,
-      headers: {Accept: 'application/json'},
-      json: true,
-      resolveWithFullResponse: true
-    });
-
-    console.log(`Fetched ${page}`);
-    nextPage = res.body.next ?
-      `https://${NBNationSlug}.nationbuilder.com${res.body.next}` :
-      initUrl;
-    redis.set('import-people-next-page', nextPage);
-    for (var i = 0; i < res.body.results.length; i += 30) {
-      yield res.body.results.slice(i, i + 30).map(updatePerson);
+    try {
+      yield request.post({
+        url: `https://newsletter.jlm2017.fr/api/${action}/SyWda9pi?access_token=${MailTrainKey}`,
+        body: {
+          EMAIL: nbPerson.email,
+          MERGE_TAGS: tags,
+          MERGE_ZIPCODE: zipcode,
+          MERGE_INSCRIPTIONS: inscriptions
+        },
+        json: true
+      });
+    } catch (err) {
+      winston.error(`Error updating ${nbPerson.email} on Mailtrain`, err.message);
     }
-  } catch (err) {
-    console.error('Error while fetching page', page, err.message);
-    yield delay(5000);
-  } finally {
-    fetchPage(nextPage || page);
   }
 });
 
-redis.get('import-people-next-page', (err, reply) => {
-  if (err) console.error(err);
-
-  fetchPage(reply || initUrl);
-});
+importPeople();

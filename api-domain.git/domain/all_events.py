@@ -16,15 +16,11 @@ class MyBasicAuth(TokenAuth):
 allow_unknown = True
 resource_methods = ['GET', 'POST']
 item_methods = ['GET', 'PUT', 'PATCH']
-public_methods = ['GET']
-public_item_methods = ['GET']
 cache_control = "max-age=60"
 additional_lookup = {'field': 'id'}
 pagination = False
 datasource = {
-    'filter': {
-        'published': True
-    }
+    'source': 'events',
 }
 mongo_indexes = {
     'id': ([('id', 1)], {'background': True}),

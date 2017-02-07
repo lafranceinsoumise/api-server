@@ -16,6 +16,7 @@ allow_unknown = True
 item_title = 'person'
 resource_methods = ['GET', 'POST']
 item_methods = ['GET', 'PUT', 'PATCH']
+cache_control = "max-age=60, private"
 additional_lookup = {'field': 'id'}
 mongo_indexes = {
     'id': ([('id', 1)], {'background': True}),
@@ -55,7 +56,7 @@ schema = {
         'schema': {
             'type': 'objectid',
             'data_relation': {
-                'resource': 'events',
+                'resource': 'all_events',
                 'field': '_id'
             }
         }
@@ -65,7 +66,7 @@ schema = {
         'schema': {
             'type': 'objectid',
             'data_relation': {
-                'resource': 'groups',
+                'resource': 'all_groups',
                 'field': '_id'
             }
         }
