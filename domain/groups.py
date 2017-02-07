@@ -15,10 +15,10 @@ class MyBasicAuth(TokenAuth):
 
 allow_unknown = True
 resource_methods = ['GET', 'POST']
-item_methods = ['GET', 'PUT']
+item_methods = ['GET', 'PUT', 'PATCH']
 public_methods = ['GET']
 public_item_methods = ['GET']
-cache_expires = 60
+cache_control = "max-age=60"
 additional_lookup = {'field': 'id'}
 pagination = False
 datasource = {
