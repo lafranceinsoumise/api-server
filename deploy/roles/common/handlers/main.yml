@@ -9,3 +9,5 @@
   service: name={{ item.path | basename }} state=restarted enabled=yes
   with_items: "{{ workers_services.files }}"
   when: ansible is not defined
+- name: install npm dependencies
+  command: npm install chdir=/srv/project/workers/
