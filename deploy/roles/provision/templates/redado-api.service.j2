@@ -9,7 +9,7 @@ Environment=API_KEY={{ api_key }}
 WorkingDirectory=/srv/server/api/
 StandardOutput=syslog
 SyslogIdentifier=redado-api
-ExecStart=/usr/bin/uwsgi -s /tmp/redado-api.sock --manage-script-name --plugin python --mount /=run:app
+ExecStart=/usr/bin/uwsgi -s /tmp/redado-api.sock --manage-script-name --plugin python --mount /=run:app --die-on-term
 Restart=always
 RestartSec=10
 User=www-data
