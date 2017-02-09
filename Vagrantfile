@@ -45,8 +45,7 @@ Vagrant.configure(2) do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  config.vm.synced_folder ".", "/srv/server"
-  config.vm.synced_folder "../api-domain.git", "/srv/project"
+  config.vm.synced_folder "./", "/srv/", nfs: true
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -74,7 +73,7 @@ Vagrant.configure(2) do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "deploy/playbook.yml"
+    ansible.playbook = "server/deploy/playbook.yml"
     # ansible.verbose = "vvv"
     ansible.extra_vars = {
       vagrant: "true",

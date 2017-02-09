@@ -1,0 +1,7 @@
+- name: Clone server repository
+  git: repo=git@github.com:jlm2017/api-server.git dest=/srv version=master accept_hostkey=yes
+  notify:
+    - install npm dependencies
+    - restart redado api
+    - find workers services
+    - restart workers

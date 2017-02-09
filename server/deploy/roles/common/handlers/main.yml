@@ -13,4 +13,4 @@
   with_items: "{{ workers_services.files }}"
   when: ansible is not defined
 - name: install npm dependencies
-  command: npm install chdir=/srv/project/workers/
+  command: npm install chdir=/srv/workers/

@@ -62,7 +62,7 @@ def load_yaml_file(filename):
 
 
 def iter_domain():
-    dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../project/domain')
+    dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../domain')
     assert os.path.exists(dir), "Directory doesn't exist: {}".format(dir)
     for sub_dir, dirs_name, filenames in os.walk(dir):
         for dir_name in dirs_name[:]:

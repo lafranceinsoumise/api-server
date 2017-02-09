@@ -1,9 +1,0 @@
-- name: Clone server repository
-  git: repo=git@github.com:jlm2017/api-server.git dest=/srv/server version=master accept_hostkey=yes
-- name: Copy project repository
-  git: repo=git@github.com:jlm2017/api-domain.git dest=/srv/project version=master accept_hostkey=yes
-  notify:
-    - install npm dependencies
-    - restart redado api
-    - find workers services
-    - restart workers

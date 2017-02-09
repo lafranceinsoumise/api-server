@@ -50,7 +50,7 @@
 - name: Ensure redado-api is running
   service: name=redado-api state=started enabled=yes
 - name: Find all workers file
-  find: paths=/srv/project/workers patterns=*.js
+  find: paths=/srv/workers patterns=*.js
   register: workers_files
 - name: Install redado-worker-{{ item.path | basename }} service file
   template: src=redado-workers.service.j2 dest=/etc/systemd/system/redado-worker-{{ item.path | basename }}.service
