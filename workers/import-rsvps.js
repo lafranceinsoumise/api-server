@@ -1,7 +1,6 @@
 'use strict';
 
 const co = require('co');
-const request = require('request-promise');
 const winston = require('winston');
 
 const api = require('./lib/api');
@@ -63,48 +62,32 @@ const fetchResource = co.wrap(function*(resource) {
 
 const updateItem = co.wrap(function*(resource, item) {
   winston.debug(`Updating RSVPs for ${resource}/${item}`);
-  let rsvps;
 
-  try {
-    // fetch all rsvps associated with event/group item
-    rsvps = yield getRSVPForItem(resource, item);
-  } catch (err) {
-    winston.error(`Error fetching RSVPS for ${resource} ${item.id} (${item._id})`, {message: err.message});
-    // nothing else to do in this case
-    return;
+  let participants = 0;
+
+  let fetchRSVPs = nb.fetchAll(NBNationSlug, `sites/${NBNationSlug}/pages/events/${item.id}/rsvps`, {NBAPIKey});
+  while (fetchRSVPs !== null) {
+    let rsvps;
+    [rsvps, fetchRSVPs] = yield fetchRSVPs();
+    if (rsvps) {
+      participants += rsvps.length;
+      // now update all people referred in the RSVPS
+      for (let i = 0; i < rsvps.length; i++) {
+        yield updatePeople(resource, item._id, rsvps[i].person_id);
+      }
+    }
   }
 
   // patch the number of participants for the event/group
-  if (item.participants !== rsvps.length) {
+  if (item.participants !== participants) {
     try {
-      yield api.patch_resource(resource, item, {participants: rsvps.length}, APIKey);
+      yield api.patch_resource(resource, item, {participants}, APIKey);
     } catch (err) {
       winston.error(`Error patching ${resource} ${item._id}`, {message: err.message});
       // here we still try to update people
     }
   }
 
-  // now update all people referred in the RSVPS
-  for (let i = 0; i < rsvps.length; i++) {
-    yield updatePeople(resource, item._id, rsvps[i].person_id);
-  }
-});
-
-/**
- * Get RSVPS
- */
-const getRSVPForItem = co.wrap(function *(resource, item) {
-  // Update RSVPs
-  winston.debug('Fetching RSVPs for event');
-  let res = yield request.get({
-    url: `https://${NBNationSlug}.nationbuilder.com/api/v1/sites/${NBNationSlug}/pages/events/${item.id}/rsvps?limit=100&access_token=${NBAPIKey}`,
-    json: true,
-    resolveWithFullResponse: true
-  });
-
-  yield nb.throttle(res);
-
-  return res.body.results;
 });
 
 const updatePeople = co.wrap(function *(resource, eventId, personId) {

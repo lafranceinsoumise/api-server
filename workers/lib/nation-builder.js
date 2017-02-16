@@ -57,7 +57,7 @@ exports.fetchAll = function (slug, resource, options) {
       // there was an error while fetching the page
       if (retry) {
         // let's first wait for a bit
-        winston.info(`Failed fetching page ${url}... ${retry} retries left`);
+        winston.info(`Failed fetching page ${url} with ${err.statusCode}... ${retry} retries left`);
         yield delay(5000);
         // and then retry the same url
         let gen = closure(url, retry-1);
