@@ -82,6 +82,7 @@ Vagrant.configure(2) do |config|
       nb_api_key: "",
       mailtrain_key: "",
       nb_slug: ""
+      disable_mailtrain: "true",
     }
   end
 end
