@@ -14,7 +14,7 @@ server {
   }
 
   location @redado-api {
-    add_header Access-Control-Allow-Origin *;
+    add_header Access-Control-Allow-Origin * always;
     include uwsgi_params;
     uwsgi_pass unix:/tmp/redado-api.sock;
   }
