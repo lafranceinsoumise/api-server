@@ -55,6 +55,11 @@ exports.fetchAll = function (slug, resource, options) {
       }
     } catch (err) {
       // there was an error while fetching the page
+      if (err.statusCode === 404) {
+        // the page does not exist: no reason to try again!
+        winston.warn(`404 while fetching page ${url}`);
+        return [[], null];
+      }
       if (retry) {
         // let's first wait for a bit
         winston.info(`Failed fetching page ${url} with ${err.statusCode}... ${retry} retries left`);
