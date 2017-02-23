@@ -65,8 +65,14 @@ const updatePerson = co.wrap(function *(nbPerson) {
   if (person && person.events && person.events.length > 0) {
     inscriptions.push('evenements');
   }
+  else {
+    inscriptions.push('sans_evenements');
+  }
   if (person && person.groups && person.groups.length > 0) {
     inscriptions.push('groupe_appui');
+  }
+  else {
+    inscriptions.push('sans_groupe_appui');
   }
 
   yield updatePersonInMailTrain(nbPerson, inscriptions.join(','));
