@@ -86,7 +86,13 @@ const updateEvent = co.wrap(function *(nbEvent) {
     };
     props.location = {
       name: nbEvent.venue.name,
-      address: nbEvent.venue.address.address1 + ', ' + nbEvent.venue.address.zip + ' ' + nbEvent.venue.address.city
+      address: nbEvent.venue.address.address1 + ', ' + nbEvent.venue.address.zip + ' ' + nbEvent.venue.address.city,
+      address1: nbEvent.venue.address.address1,
+      address2: nbEvent.venue.address.address2,
+      city: nbEvent.venue.address.city,
+      country_code: nbEvent.venue.address.country_code,
+      zip: nbEvent.venue.address.zip,
+      state: nbEvent.venue.address.state
     };
   }
 
