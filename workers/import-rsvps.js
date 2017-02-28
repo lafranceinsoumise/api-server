@@ -70,10 +70,14 @@ const updateItem = co.wrap(function*(resource, item) {
     let rsvps;
     [rsvps, fetchRSVPs] = yield fetchRSVPs();
     if (rsvps) {
-      participants += rsvps.length;
       // now update all people referred in the RSVPS
       for (let i = 0; i < rsvps.length; i++) {
-        yield updatePeople(resource, item._id, rsvps[i].person_id);
+        if(!rsvps[i].canceled) {
+          // count participants only if RSVP not canceled
+          // add 1 + number of guests for this RSVP
+          participants += 1 + (rsvps[i].guests_count || 0);
+        }
+        yield updatePeople(resource, item._id, rsvps[i].person_id, rsvps[i].canceled);
       }
     }
   }
@@ -90,7 +94,7 @@ const updateItem = co.wrap(function*(resource, item) {
 
 });
 
-const updatePeople = co.wrap(function *(resource, eventId, personId) {
+const updatePeople = co.wrap(function *(resource, eventId, personId, canceled) {
   // Get email from te person nationbuilder id
   let person;
   try {
@@ -107,10 +111,23 @@ const updatePeople = co.wrap(function *(resource, eventId, personId) {
   let attr = attributes_names[resource];
 
   let body = {};
-  if ((!person[attr]) || (person[attr].indexOf(eventId) == -1)) {
-    // Update only if resource is not already on the person
-    body[attr] = person[attr] ? [...new Set(person[attr].concat(eventId))] : [eventId];
+  let changed = false;
 
+  // we either remove the eventId, or add it, depending on the cancelation status of the RSVP
+  if (canceled) {
+    // we patch person iff eventId is in the attr attribute of person
+    if(person[attr] && person[attr].indexOf(eventId) !== -1) {
+      body[attr] = person[attr].filter((id) => id !== eventId);
+      changed = true;
+    }
+  } else {
+    // we patch person iff eventId is not in the attr attribute of person
+    if(!person[attr] || (person[attr].indexOf(eventId) === -1)) {
+      body[attr] = [...(person[attr] || []), eventId];
+      changed = true;
+    }
+  }
+  if (changed) {
     try {
       yield api.patch_resource('people', person, body, APIKey);
     } catch (err) {
