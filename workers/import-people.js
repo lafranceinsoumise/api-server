@@ -87,6 +87,17 @@ const updatePersonInAPI = co.wrap(function*(nbPerson) {
     id: nbPerson.id,
     tags: nbPerson.tags
   };
+  if (nbPerson && nbPerson.primary_address) {
+    props.location = {
+      address: nbPerson.primary_address.address1 + ', ' + nbPerson.primary_address.zip + ' ' + nbPerson.primary_address.city,
+      address1: nbPerson.primary_address.address1,
+      address2: nbPerson.primary_address.address2,
+      city: nbPerson.primary_address.city,
+      country_code: nbPerson.primary_address.country_code,
+      zip: nbPerson.primary_address.zip,
+      state: nbPerson.primary_address.state
+    };
+  }
 
   let person;
   // Does the person already exist in the API ?

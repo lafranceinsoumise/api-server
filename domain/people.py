@@ -70,6 +70,38 @@ schema = {
                 'field': '_id'
             }
         }
+    },
+    'location': {
+        'type': 'dict',
+        'schema': {
+            'address': {
+                'type': 'string'
+            },
+            'address1': {
+                'type': 'string',
+                'nullable': True,
+            },
+            'address2': {
+                'type': 'string',
+                'nullable': True,
+            },
+            'city': {
+                'type': 'string',
+                'nullable': True,
+            },
+            'country_code': {
+                'type': 'string',
+                'nullable': True,
+            },
+            'zip': {
+                'type': 'string',
+                'nullable': True,
+            },
+            'state': {
+                'type': 'string',
+                'nullable': True,
+            },
+        }
     }
 }
 authentication = MyBasicAuth
