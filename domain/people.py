@@ -101,6 +101,27 @@ schema = {
                 'type': 'string',
                 'nullable': True,
             },
+        },
+    },
+    'authorizations': {
+        'type': 'list',
+        'schema': {
+            'type': 'dict',
+            'schema': {
+                'client': {
+                    'type': 'objectid',
+                    'data_relation' : {
+                        'resource': 'clients',
+                        'field': '_id'
+                    }
+                },
+                'scopes': {
+                    'type': 'list',
+                    'schema': {
+                        'type': 'string'
+                    }
+                }
+            }
         }
     }
 }
