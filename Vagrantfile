@@ -85,6 +85,7 @@ Vagrant.configure(2) do |config|
       mailtrain_key: "",
       nb_slug: "",
       disable_mailtrain: "true",
+      ipwhitelist: "192.168.0.0/16"
     }
   end
 end

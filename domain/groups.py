@@ -1,23 +1,6 @@
-from eve.auth import TokenAuth
-
-
-def get_api_key():
-    import os
-    return os.environ['API_KEY']
-
-api_key = get_api_key()
-
-
-class MyBasicAuth(TokenAuth):
-    def check_auth(self, token, allowed_roles, resource, method):
-        return token == api_key
-
-
 allow_unknown = True
-resource_methods = ['GET', 'POST']
-item_methods = ['GET', 'PUT', 'PATCH']
-public_methods = ['GET']
-public_item_methods = ['GET']
+resource_methods = ['GET']
+item_methods = ['GET']
 cache_control = "max-age=60"
 additional_lookup = {'field': 'id'}
 pagination = False
@@ -109,4 +92,3 @@ schema = {
         'type': 'integer'
     }
 }
-authentication = MyBasicAuth
