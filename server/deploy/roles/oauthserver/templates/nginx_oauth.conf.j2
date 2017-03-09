@@ -1,0 +1,39 @@
+server {
+  listen 80;
+
+  server_name {{ oauth_domain }};
+
+  location ~ /.well-known {
+    root /var/www/letsencrypt/;
+    try_files $uri =404;
+    allow all;
+  }
+
+  location / {
+    return 301 https://$server_name$request_uri;
+  }
+}
+
+server {
+  listen 443;
+
+  server_name {{ oauth_domain }};
+
+  ssl_certificate     /etc/letsencrypt/live/{{ api_domain }}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/{{ api_domain }}/privkey.pem;
+
+  proxy_set_header X-Forwarded-For $remote_addr;
+  proxy_set_header X-Forwarded-Host $host;
+  proxy_set_header X-Forwarded-Proto $scheme;
+
+  location ~ /.well-known {
+    root /var/www/letsencrypt/;
+    try_files $uri =404;
+    allow all;
+  }
+
+  location / {
+    proxy_pass http://localhost:5555;
+  }
+
+}

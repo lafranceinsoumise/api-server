@@ -1,0 +1,22 @@
+- name: Clone oauth repository
+  git: repo=git@github.com:jlm2017/oauth.git dest=/opt/oauth version=master accept_hostkey=yes
+  notify:
+    - install npm dependencies for oauth
+    - restart oauth server
+- name: Ensure oauth_server conf dir exists
+  file: path=/etc/oauth_server/ state=directory
+- name: Copy oauth configuration
+  template: src=oauth_server.conf.j2 dest=/etc/oauth_server/oauth_server.conf
+  notify:
+    - reload systemd
+    - restart oauth server
+- name: Install oauth_server service file
+  template: src=oauth_server.service.j2 dest=/etc/systemd/system/oauth_server.service
+  notify:
+    - reload systemd
+    - restart oauth server
+- name: Configure nginx for oauth
+  template: src=nginx_oauth.conf.j2 dest=/etc/nginx/conf.d/oauth_server.conf
+  notify:
+    - reload systemd
+    - reload nginx

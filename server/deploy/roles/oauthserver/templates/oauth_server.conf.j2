@@ -1,0 +1,21 @@
+NODE_ENV=production
+PORT=5555
+TRUST_PROXY=loopback
+
+# must start with scheme
+ENDPOINT=https://{{ oauth_domain }}
+
+# session configuration
+COOKIE_SECRET={{ cookie_secret }}
+SESSION_DOMAIN={{ session_domain }}
+COOKIE_SECURE=true
+
+# mail configuration
+SMTP_URL={{ smtp_url }}
+MAIL_TEMPLATE={{ auth_template_url }}
+MAIL_SUBJECT=Connexion à jlm2017.fr
+MAIL_FROM=JLM2017 <nepasrepondre@jlm2017.fr>
+
+# API config... endpoint must start with scheme
+API_ENDPOINT=https://{{ api_domain }}
+API_KEY={{ api_key }}

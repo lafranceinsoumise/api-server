@@ -1,0 +1,4 @@
+- name: install npm dependencies for oauth
+  command: npm install chdir=/opt/oauth
+- name: restart oauth server
+  service: name=oauth_server state=restarted

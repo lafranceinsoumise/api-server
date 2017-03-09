@@ -17,3 +17,4 @@
     - { role: deploy, when: "vagrant is not defined", tags: ["deploy"] }
     - { role: provision, tags: ["provision"] }
     - { role: letsencrypt, tags: ["letsencrypt"], when: letsencrypt == 'enabled' }
+    - { role: oauthserver, tags: ["oauthserver"], when: "vagrant is not defined" }

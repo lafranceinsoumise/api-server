@@ -1,0 +1,14 @@
+[Unit]
+Description=OAuth server
+
+[Service]
+EnvironmentFile=/etc/oauth_server/oauth_server.conf
+WorkingDirectory=/opt/oauth/
+StandardOutput=syslog
+SyslogIdentifier=oauth_server
+ExecStart=/usr/bin/nodejs server.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
