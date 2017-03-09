@@ -30,16 +30,22 @@ server {
     allow all;
   }
 
+  add_header Access-Control-Allow-Origin * always;
+  include uwsgi_params;
+  uwsgi_cache_key $scheme$proxy_host$request_uri;
+  uwsgi_cache_use_stale error timeout updating http_500 http_503;
+  uwsgi_cache redado;
   location / {
-    try_files $uri @redado-api;
-  }
-
-  location @redado-api {
-    add_header Access-Control-Allow-Origin * always;
-    include uwsgi_params;
-    uwsgi_cache_key $scheme$proxy_host$request_uri;
-    uwsgi_cache_use_stale error timeout updating http_500 http_503;
-    uwsgi_cache redado;
     uwsgi_pass unix:/tmp/redado-api.sock;
   }
+
+  {% if ipwhitelist is defined %}
+  location ~ /people|/all_groups|/all_events {
+    {% for cidr in ipwhitelist.split(',') %}
+    allow {{ cidr }};
+    {% endfor %}
+    deny all;
+    uwsgi_pass unix:/tmp/redado-api.sock;
+  }
+  {% endif %}
 }
