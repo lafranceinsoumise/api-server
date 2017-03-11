@@ -1,5 +1,5 @@
 - name: Clone oauth repository
-  git: repo=git@github.com:jlm2017/oauth.git dest=/opt/oauth version=master accept_hostkey=yes
+  git: repo=https://github.com/jlm2017/oauth.git dest=/opt/oauth version=master accept_hostkey=yes
   notify:
     - install npm dependencies for oauth
     - restart oauth server

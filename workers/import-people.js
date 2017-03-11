@@ -82,6 +82,8 @@ const updatePerson = co.wrap(function *(nbPerson) {
 const updatePersonInAPI = co.wrap(function*(nbPerson) {
 
   let props = {
+    first_name: nbPerson.first_name,
+    last_name: nbPerson.last_name,
     email: nbPerson.email,
     email_opt_in: nbPerson.email_opt_in,
     id: nbPerson.id,
