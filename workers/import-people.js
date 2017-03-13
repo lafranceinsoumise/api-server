@@ -30,7 +30,8 @@ const whiteList = [
   'convention : cars',
   'convention : inscrit',
   'agir groupe d\'appui',
-  'groupe d\'appuis certifié'
+  'groupe d\'appuis certifié',
+  'agir appels'
 ];
 
 
