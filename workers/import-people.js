@@ -25,14 +25,16 @@ winston.configure({
 });
 
 
-const whiteList = [
+const tagWhiteList = [
   'créateur groupe d\'appui',
   'convention : cars',
   'convention : inscrit',
-  'agir groupe d\'appui',
   'groupe d\'appuis certifié',
-  'agir appels'
 ];
+
+function shouldIncludeTag(tag) {
+  return tagWhiteList.includes(tag) || tag.startsWith('agir ');
+}
 
 
 const importPeople = co.wrap(function *(forever = true) {
@@ -105,7 +107,7 @@ const updatePersonInAPI = co.wrap(function*(nbPerson) {
   let person;
   // Does the person already exist in the API ?
   try {
-    person = yield api.get_resource({resource:'people', id: nbPerson.id, APIKey: APIKey});
+    person = yield api.get_resource({resource: 'people', id: nbPerson.id, APIKey: APIKey});
   } catch (err) {
     person = null;
     if (err.statusCode !== 404) {
@@ -143,7 +145,7 @@ const updatePersonInMailTrain = co.wrap(function*(nbPerson, inscriptions) {
   // Update mailtrain
   if (!DisableMailTrain) {
     let action = nbPerson.email_opt_in === true ? 'subscribe' : 'unsubscribe';
-    let tags = nbPerson.tags.filter(tag => (whiteList.indexOf(tag) !== -1));
+    let tags = nbPerson.tags.filter(shouldIncludeTag);
     let zipcode = (nbPerson.primary_address &&
       nbPerson.primary_address.zip) || null;
 
