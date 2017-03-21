@@ -9,8 +9,10 @@
   "author": "Guillaume Royer <perso@guilro.com>",
   "license": "AGPL-3.0",
   "dependencies": {
+    "body-parser": "^1.17.1",
     "co": "^4.6.0",
     "deep-equal": "^1.0.1",
+    "express": "^4.15.2",
     "js-base64": "^2.1.9",
     "redis": "^2.6.2",
     "request-promise": "^3.0.0",
