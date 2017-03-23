@@ -53,6 +53,7 @@ app.post('/signup_bounce', (req, res) => {
           return request({
             url: `http://localhost:5000/people/${id}`,
             method: 'DELETE',
+            json: true,
             headers: {
               Authorization: encodeAPIKey(APIKey),
               'If-Match': etag
@@ -60,6 +61,7 @@ app.post('/signup_bounce', (req, res) => {
           }).then(() => {
             return request({
               url: `https://plp.nationbuilder.com/api/v1/people/${NBid}?access_token=${NBAPIKey}`,
+              json: true,
               method: 'DELETE'
             });
           });
