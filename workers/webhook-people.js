@@ -37,14 +37,16 @@ app.post('/signup_bounce', (req, res) => {
     return res.sendStatus(401);
   }
 
+  res.sendStatus(200);
+
   for (var i = 0; i < req.body.length; i++) {
     var webhook = req.body[i].msys;
     if (webhook.message_event && ['10', '30'].indexOf(webhook.message_event.bounce_class) !== -1) {
-      console.log('hard bounce', webhook.message_event.rcpt_to);
-      api.get_resource({resource: 'people', where: `email=="${webhook.message_event.rcpt_to}"`, APIKey})
+      console.log('hard bounce', webhook.message_event.raw_rcpt_to);
+      api.get_resource({resource: 'people', where: `email=="${webhook.message_event.raw_rcpt_to}"`, APIKey})
         .then((people) => {
           if (people._items.length === 0) {
-            console.log('not in database', webhook.message_event.rcpt_to);
+            console.log('not in database', webhook.message_event.raw_rcpt_to);
             return false;
           }
           var id = people._items[0]._id;
@@ -66,14 +68,12 @@ app.post('/signup_bounce', (req, res) => {
             });
           });
         }).then((found) => {
-          if (found) console.log('deleted', webhook.message_event.rcpt_to);
+          if (found) console.log('deleted', webhook.message_event.raw_rcpt_to);
         }).catch(err => {
           console.error(err.stack);
         });
     }
   }
-
-  return res.sendStatus(200);
 });
 
 app.listen(4000, '127.0.0.1');
