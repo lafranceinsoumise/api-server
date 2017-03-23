@@ -53,9 +53,9 @@ app.post('/signup_bounce', (req, res) => {
           return request({
             url: `http://localhost:5000/people/${id}`,
             method: 'DELETE',
-            etag: etag,
             headers: {
-              Authorization: encodeAPIKey(APIKey)
+              Authorization: encodeAPIKey(APIKey),
+              'If-Match': etag
             }
           }).then(() => {
             return request({
