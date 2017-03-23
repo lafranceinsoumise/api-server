@@ -15,7 +15,7 @@ class MyBasicAuth(TokenAuth):
 allow_unknown = True
 item_title = 'person'
 resource_methods = ['GET', 'POST']
-item_methods = ['GET', 'PUT', 'PATCH']
+item_methods = ['GET', 'PUT', 'PATCH', 'DELETE']
 cache_control = "max-age=60, private"
 additional_lookup = {'field': 'id'}
 mongo_indexes = {
