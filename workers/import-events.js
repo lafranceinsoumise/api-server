@@ -112,6 +112,9 @@ const updateEvent = co.wrap(function *(nbEvent) {
     case 16:
       props.agenda = 'reunions_publiques';
       break;
+    case 17:
+      props.agenda = 'camion_melenchon';
+      break;
     case 10:
       // ==> covoiturages
       return;
