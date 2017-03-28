@@ -41,7 +41,7 @@ app.post('/ses_bounce', bodyParser.text(), (req, res) => {
 
   if (req.body.Type !== 'Notification') return res.sendStatus(400);
 
-  var message = JSON.parse(req.body.message);
+  var message = JSON.parse(req.body.Message);
 
   if (message.notificationType !== 'Bounce') return res.sendStatus(400);
 
