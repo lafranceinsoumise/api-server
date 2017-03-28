@@ -10,6 +10,7 @@ function encodeAPIKey(APIKey) {
 const webHookKey = process.env.WEBHOOK_NB_KEY;
 const webSparkpostHookKey = process.env.WEBHOOK_SPARKPOST_KEY;
 const APIKey = process.env.API_KEY;
+const MailTrainKey = process.env.MAILTRAIN_KEY;
 const NBAPIKey = process.env.NB_API_KEY_2;
 
 const api = require('./lib/api');
@@ -65,6 +66,14 @@ app.post('/signup_bounce', (req, res) => {
               url: `https://plp.nationbuilder.com/api/v1/people/${NBid}?access_token=${NBAPIKey}`,
               json: true,
               method: 'DELETE'
+            });
+          }).then(() => {
+            return request.post({
+              url: `https://newsletter.jlm2017.fr/api/unsubscribe/SyWda9pi?access_token=${MailTrainKey}`,
+              body: {
+                EMAIL: webhook.message_event.raw_rcpt_to,
+              },
+              json: true
             });
           });
         }).then((found) => {
