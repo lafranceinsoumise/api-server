@@ -41,6 +41,8 @@ app.post('/ses_bounce', (req, res) => {
 
   console.log('Amazon SES bounce');
   removeBounce(message.mail.destination[0]);
+
+  return res.sendStatus(200);
 });
 
 app.post('/signup_bounce', (req, res) => {
