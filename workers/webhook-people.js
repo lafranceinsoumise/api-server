@@ -33,6 +33,11 @@ app.post('/people', (req, res) => {
 });
 
 app.post('/ses_bounce', (req, res) => {
+  if (req.body.Type === 'SubscriptionConfirmation') {
+    request(req.body.SubscribeURL);
+    return res.sendStatus(200);
+  }
+
   if (req.body.Type !== 'Notification') return res.sendStatus(400);
 
   var message = JSON.parse(req.body.message);
