@@ -32,7 +32,8 @@ app.post('/people', (req, res) => {
   return res.sendStatus(202);
 });
 
-app.post('/ses_bounce', (req, res) => {
+app.post('/ses_bounce', bodyParser.text(), (req, res) => {
+  req.body = JSON.parse(req.body);
   if (req.body.Type === 'SubscriptionConfirmation') {
     request(req.body.SubscribeURL);
     return res.sendStatus(200);
