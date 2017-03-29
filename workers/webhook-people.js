@@ -79,7 +79,7 @@ function removeBounce(recipient) {
 
       var oneHourAgo = new Date();
       oneHourAgo.setHours(oneHourAgo.getHours() -1);
-      if (new Date(people._items[0]._created < oneHourAgo)) {
+      if (new Date(people._items[0]._created) < oneHourAgo) {
         console.log(recipient, ': created more than one hour ago');
         return false;
       }
