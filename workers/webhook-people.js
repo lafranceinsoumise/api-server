@@ -39,11 +39,11 @@ app.post('/ses_bounce', bodyParser.text(), (req, res) => {
     return res.sendStatus(200);
   }
 
-  if (req.body.Type !== 'Notification') return res.sendStatus(400);
+  if (req.body.Type !== 'Notification') return res.sendStatus(200);
 
   var message = JSON.parse(req.body.Message);
-
-  if (message.notificationType !== 'Bounce') return res.sendStatus(400);
+  if (message.notificationType !== 'Bounce') return res.sendStatus(200);
+  if (message.bounce.bounceType !== 'Permanent') return res.sendStatus(200);
 
   console.log('Amazon SES bounce');
   removeBounce(message.mail.destination[0]);
