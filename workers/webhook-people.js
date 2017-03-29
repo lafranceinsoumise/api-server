@@ -45,7 +45,7 @@ app.post('/ses_bounce', bodyParser.text(), (req, res) => {
   if (message.notificationType !== 'Bounce') return res.sendStatus(200);
   if (message.bounce.bounceType !== 'Permanent') return res.sendStatus(200);
 
-  console.log('Amazon SES bounce');
+  console.log('Amazon SES bounce : ' + message.mail.destination[0]);
   removeBounce(message.mail.destination[0]);
 
   return res.sendStatus(200);
@@ -62,7 +62,7 @@ app.post('/signup_bounce', (req, res) => {
   for (var i = 0; i < req.body.length; i++) {
     var webhook = req.body[i].msys;
     if (webhook.message_event && ['10', '30'].indexOf(webhook.message_event.bounce_class) !== -1) {
-      console.log('Sparkpost bounce');
+      console.log('Sparkpost bounce : ' + webhook.message_event.raw_rcpt_to);
       removeBounce(webhook.message_event.raw_rcpt_to);
     }
   }
@@ -73,9 +73,17 @@ function removeBounce(recipient) {
   api.get_resource({resource: 'people', where: `email=="${recipient}"`, APIKey})
     .then((people) => {
       if (people._items.length === 0) {
-        console.log('not in database', recipient);
+        console.log(recipient, ': not in database');
         return false;
       }
+
+      var oneHourAgo = new Date();
+      oneHourAgo.setHours(oneHourAgo.getHours() -1);
+      if (new Date(people._items[0]._created < oneHourAgo)) {
+        console.log(recipient, ': created more than one hour ago');
+        return false;
+      }
+
       var id = people._items[0]._id;
       var NBid = people._items[0].id;
       var etag = people._items[0]._etag;
@@ -103,7 +111,7 @@ function removeBounce(recipient) {
         });
       });
     }).then((found) => {
-      if (found) console.log('deleted', recipient);
+      if (found) console.log(recipient, ': deleted');
     }).catch(err => {
       console.error(err.stack);
     });
