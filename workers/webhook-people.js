@@ -3,8 +3,6 @@ const bodyParser = require('body-parser');
 const request = require('request-promise');
 const base64 = require('js-base64').Base64;
 
-const api = require('./lib/api');
-
 function encodeAPIKey(APIKey) {
   return 'Basic ' + base64.encode(`${APIKey}:`);
 }
@@ -88,7 +86,7 @@ function removeBounce(recipient) {
           bounced: true,
           bounced_date: new Date().toUTCString()
         }, APIKey).then(() => {
-          console.log(recipient, ': marked as bounced')
+          console.log(recipient, ': marked as bounced');
         });
       }
 
