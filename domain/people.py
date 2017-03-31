@@ -45,6 +45,12 @@ schema = {
         'type': 'boolean',
         'required': True
     },
+    'bounced': {
+        'type': 'integer'
+    },
+    'bounced_date': {
+        'type': 'datetime'
+    },
     'tags': {
         'type': 'list',
         'schema': {

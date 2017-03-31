@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const request = require('request-promise');
 const base64 = require('js-base64').Base64;
 
+const api = require('./lib/api');
+
 function encodeAPIKey(APIKey) {
   return 'Basic ' + base64.encode(`${APIKey}:`);
 }
@@ -81,7 +83,13 @@ function removeBounce(recipient) {
       oneHourAgo.setHours(oneHourAgo.getHours() -1);
       if (new Date(people._items[0]._created) < oneHourAgo) {
         console.log(recipient, ': created more than one hour ago');
-        return false;
+
+        return api.patch_resource('people', people._items[0], {
+          bounced: true,
+          bounced_date: new Date().toUTCString()
+        }, APIKey).then(() => {
+          console.log(recipient, ': marked as bounced')
+        });
       }
 
       var id = people._items[0]._id;
@@ -109,9 +117,9 @@ function removeBounce(recipient) {
           },
           json: true
         });
+      }).then(() => {
+        console.log(recipient, ': deleted');
       });
-    }).then((found) => {
-      if (found) console.log(recipient, ': deleted');
     }).catch(err => {
       console.error(err.stack);
     });
