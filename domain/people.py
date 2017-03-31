@@ -46,7 +46,7 @@ schema = {
         'required': True
     },
     'bounced': {
-        'type': 'integer'
+        'type': 'boolean'
     },
     'bounced_date': {
         'type': 'datetime'
