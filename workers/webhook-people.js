@@ -64,7 +64,7 @@ app.post('/sendgrid_bounce', (req, res) => {
     if (webhook.event !== 'bounce') continue;
     if (webhook.type !== 'bounce') continue;
 
-    console.log('Sendgrid bounce : ' + webhook.message_event.raw_rcpt_to);
+    console.log('Sendgrid bounce : ' + webhook.email);
     removeBounce(webhook.email);
   }
 
