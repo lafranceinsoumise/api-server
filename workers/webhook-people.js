@@ -9,6 +9,7 @@ function encodeAPIKey(APIKey) {
 
 const webHookKey = process.env.WEBHOOK_NB_KEY;
 const webSparkpostHookKey = process.env.WEBHOOK_SPARKPOST_KEY;
+const webhookSendgridKey = process.env.WEBHOOK_SENDGRID_KEY;
 const APIKey = process.env.API_KEY;
 const MailTrainKey = process.env.MAILTRAIN_KEY;
 const NBAPIKey = process.env.NB_API_KEY_2;
@@ -49,6 +50,24 @@ app.post('/ses_bounce', bodyParser.text(), (req, res) => {
   removeBounce(message.mail.destination[0]);
 
   return res.sendStatus(200);
+});
+
+app.post('/sendgrid_bounce', (req, res) => {
+  if (req.header('Authorization') !== `Basic ${base64.encode(`jlm2017:${webhookSendgridKey}`)}`) {
+    console.log(req.header('Authorization'));
+    return res.sendStatus(401);
+  }
+
+  for (var i = 0; i < req.body.length; i++) {
+    var webhook = req.body[i];
+
+    if (webhook.event !== 'bounce') continue;
+    if (webhook.type !== 'bounce') continue;
+
+    removeBounce(webhook.email);
+  }
+
+  res.sendStatus(200);
 });
 
 app.post('/signup_bounce', (req, res) => {
